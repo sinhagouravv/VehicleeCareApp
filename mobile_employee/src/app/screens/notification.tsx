@@ -16,6 +16,7 @@ const EVENT_MAPPING: any = {
   booking_created: { type: 'Booking', category: 'Task', color: 'bg-emerald-100 text-emerald-700', typeColor: 'bg-sky-100', typeTextColor: 'text-sky-700' },
   leave: { type: 'Leave', category: 'HR', typeStyle: { backgroundColor: '#fef3c7', borderColor: '#fde68a' }, typeTextStyle: { color: '#92400e' } },
   overtime: { type: 'Overtime', category: 'HR', typeStyle: { backgroundColor: '#ffedd5', borderColor: '#fed7aa' }, typeTextStyle: { color: '#c2410c' } },
+  meeting: { type: 'Meeting', category: 'Admin', typeStyle: { backgroundColor: '#f3e8ff', borderColor: '#e9d5ff' }, typeTextStyle: { color: '#6b21a8' } },
 };
 
 export default function NotificationScreen() {
@@ -56,7 +57,7 @@ export default function NotificationScreen() {
 
       // Filter notifications for this employee ONLY
       const employeeNotifs = allNotifs.filter((n: any) => {
-        if (n.eventType === 'leave' || n.eventType === 'overtime') {
+        if (n.eventType === 'leave' || n.eventType === 'overtime' || n.eventType === 'meeting') {
           let userObj: any = {};
           if (storedUser) {
             try { userObj = JSON.parse(storedUser); } catch(e){}
@@ -90,7 +91,7 @@ export default function NotificationScreen() {
           setUsers(userRes.data.data || []);
         }
       } catch (e) {
-        console.error('Error fetching users:', e);
+        console.log('Error fetching users:', e);
       }
     } catch (error) {
       // Use console.log instead of error to avoid Expo's red screen for background polling 500 errors
@@ -129,7 +130,7 @@ export default function NotificationScreen() {
   const getDisplayUserId = (notif: any) => {
     if (notif.eventType === 'leave') return notif.meta?.approverEmpId || 'SYSTEM';
     if (notif.eventType === 'overtime') return notif.meta?.approverEmpId || 'MANAGER';
-    if (notif.eventType === 'booking_created') return notif.meta?.adminEmpId || 'SYSTEM';
+    if (notif.eventType === 'booking_created' || notif.eventType === 'meeting') return notif.meta?.adminEmpId || 'SYSTEM';
     if (notif.meta?.displayUserId && notif.meta.displayUserId !== 'GUEST') return notif.meta.displayUserId;
     const name = (notif.meta?.userName || notif.meta?.name || notif.message.split(' (')[0].split(' booked')[0]).trim().toUpperCase();
     if (nameToUserIdMap[name]) return nameToUserIdMap[name];
@@ -257,7 +258,7 @@ export default function NotificationScreen() {
               return filteredNotifications.map((notif: any) => {
                 const mapping = getMapping(notif);
                 const customerName = 
-                  notif.eventType === 'booking_created' ? (notif.meta?.adminName || 'ADMIN') :
+                  (notif.eventType === 'booking_created' || notif.eventType === 'meeting') ? (notif.meta?.adminName || 'ADMIN') :
                   (notif.eventType === 'leave' || notif.eventType === 'overtime') ? (notif.meta?.approverName || 'MANAGER') :
                   (notif.meta?.userName || notif.meta?.name || notif.message.split(' (')[0].split(' booked')[0] || 'N/A');
                 const displayId = getDisplayUserId(notif);
