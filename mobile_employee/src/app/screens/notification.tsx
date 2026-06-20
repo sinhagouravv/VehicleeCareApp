@@ -291,7 +291,7 @@ export default function NotificationScreen() {
                   <Text 
                     style={{ textAlign: 'justify' }} 
                     numberOfLines={isExpanded ? undefined : 2}
-                    className={`leading-3 uppercase ${notif.eventType === 'booking_created' ? 'uppercase text-[13px] text-slate-600 font-semibold' : 'text-[13px] text-slate-600 font-semibold'}`}
+                    className={`leading-4.5 uppercase ${notif.eventType === 'booking_created' ? 'uppercase text-[13px] text-slate-600 font-semibold' : 'text-[13px] text-slate-600 font-semibold'}`}
                   >
                     {notif.eventType === 'booking_created' ? <React.Fragment>A new Booking is being assigned to you for <Text className="text-slate-700 font-bold">{notif.meta?.service || 'service'}</Text> of <Text className="text-slate-700 font-bold">{notif.meta?.vehicle || 'vehicle'}</Text>. Kindly contact with your assigned team member's and complete the task within the time.</React.Fragment> : notif.message}
                   </Text>
