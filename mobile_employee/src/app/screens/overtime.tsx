@@ -250,19 +250,30 @@ export default function OvertimeScreen() {
 
   const formatDateString = (dateStr: string) => {
     if (!dateStr) return '';
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
     const parts = dateStr.split('-');
     if (parts.length === 3) {
-      const year = parts[0];
-      const monthIdx = parseInt(parts[1], 10) - 1;
-      const day = parseInt(parts[2], 10);
-      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-      if (monthIdx >= 0 && monthIdx < 12 && !isNaN(day)) {
-        return `${day} ${months[monthIdx]} ${year}`;
+      // DD-MM-YYYY (stored overtime dates)
+      if (parts[2].length === 4) {
+        const dd = parseInt(parts[0], 10);
+        const mm = parseInt(parts[1], 10) - 1;
+        const yyyy = parts[2];
+        if (mm >= 0 && mm < 12 && !isNaN(dd)) {
+          return `${dd} ${months[mm]} ${yyyy}`;
+        }
+      }
+      // YYYY-MM-DD (attendance record dates)
+      if (parts[0].length === 4) {
+        const yyyy = parts[0];
+        const mm = parseInt(parts[1], 10) - 1;
+        const dd = parseInt(parts[2], 10);
+        if (mm >= 0 && mm < 12 && !isNaN(dd)) {
+          return `${dd} ${months[mm]} ${yyyy}`;
+        }
       }
     }
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return dateStr;
-    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
