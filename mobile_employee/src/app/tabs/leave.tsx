@@ -13,8 +13,6 @@ const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.
 const API_URL = `http://${localIp}:5001`;
 
 const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, title }: any) => {
-  if (!visible) return null;
-
   const getNoon = (d?: Date) => {
     const nd = d ? new Date(d) : new Date();
     nd.setHours(12, 0, 0, 0);
@@ -55,6 +53,10 @@ const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, ti
   };
 
   const handleValueChange = (event: any, selectedDate?: Date) => {
+    if (event.type === 'dismissed') {
+      onClose();
+      return;
+    }
     if (selectedDate) {
       if (Platform.OS === 'android') {
         let finalDate = selectedDate;
@@ -93,7 +95,7 @@ const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, ti
             display="spinner"
             minimumDate={minDate}
             maximumDate={maxDate}
-            onValueChange={handleValueChange}
+            onChange={handleValueChange}
             onDismiss={handleDismiss}
             textColor="#000000"
             themeVariant="light"
@@ -112,7 +114,7 @@ const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, ti
       display="default"
       minimumDate={minDate}
       maximumDate={maxDate}
-      onValueChange={handleValueChange}
+      onChange={handleValueChange}
       onDismiss={handleDismiss}
       locale="en-GB"
     />
@@ -524,12 +526,12 @@ export default function LeaveScreen() {
             <TouchableOpacity activeOpacity={1} onPress={() => { setIsApplyModalOpen(false); resetForm(); }} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
             
             <View className="bg-[#f5f7f9] shadow-2xl overflow-hidden" style={{ maxHeight: '80%', width: '91%', borderRadius: 35 }}>
-              <View style={{ paddingTop: 22, paddingBottom: 7, paddingHorizontal: 20 }} className=" flex-row justify-between items-center relative">
+              <View style={{ paddingTop: 22, paddingBottom: 15, paddingHorizontal: 20 }} className=" flex-row justify-between items-center relative">
                 <View style={{ width: 20, paddingTop: 20 }} />
                 <Text className="text-[18px] font-bold text-[#011023] text-center uppercase tracking-wide flex-1">Apply For Leave</Text>
-                <TouchableOpacity onPress={() => { setIsApplyModalOpen(false); resetForm(); }}>
+                {/* <TouchableOpacity onPress={() => { setIsApplyModalOpen(false); resetForm(); }}>
                   <X size={20} color="#011023" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
 
               <ScrollView className="p-6" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
