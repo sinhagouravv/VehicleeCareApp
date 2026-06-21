@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Platform, StatusBar, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Platform, StatusBar, ScrollView, ActivityIndicator, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, User, Mail, Phone, Hash, Briefcase, Building, Store, MapPin, Calendar, FileText, Shield, FileBadge } from 'lucide-react-native';
+import { ArrowLeft, User, Mail, Phone, Hash, Briefcase, Building, Store, MapPin, Calendar, FileText, Shield, FileBadge, X, Info } from 'lucide-react-native';
 import * as SecureStore from 'expo-secure-store';
+import { BlurView } from 'expo-blur';
+import QRCode from 'react-native-qrcode-svg';
 
 export default function ProfileScreen() {
   const [user, setUser] = useState<any>(null);
+  const [showQRModal, setShowQRModal] = useState(false);
 
   useEffect(() => {
     loadUser();
@@ -64,6 +67,8 @@ export default function ProfileScreen() {
             {/* Right: QR Button */}
             <View style={{ width: 70, alignItems: 'flex-end' }}>
               <TouchableOpacity 
+                activeOpacity={0.7}
+                onPress={() => setShowQRModal(true)}
                 className="rounded-xl items-center justify-center bg-slate-50 border border-slate-200" 
                 style={{ 
                   paddingHorizontal: 12, 
@@ -181,6 +186,91 @@ export default function ProfileScreen() {
           </View>
 
         </ScrollView>
+
+      {/* QR Code View Modal */}
+      <Modal visible={showQRModal} transparent animationType="slide">
+        <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
+          <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
+          
+          {/* Backdrop Click to Close */}
+          <TouchableOpacity 
+            style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} 
+            activeOpacity={1} 
+            onPress={() => setShowQRModal(false)} 
+          />
+
+          <View 
+            className="bg-white shadow-2xl overflow-hidden" 
+            style={{ 
+              height: '65%', 
+              width: '97%', 
+              borderRadius: 40, 
+              padding: 10,
+              alignItems: 'center'
+            }}
+          >
+            {/* Modal Header */}
+            <View style={{ paddingTop: 15, paddingBottom: 0, paddingHorizontal: 10, width: '100%' }} className="flex-row justify-between items-center relative">
+              <View style={{ width: 20 }} />
+              <Text className="text-[18px] font-bold text-[#011023] text-center uppercase tracking-wide flex-1">
+                Verification QR
+              </Text>
+              <TouchableOpacity onPress={() => setShowQRModal(false)}>
+                <X size={20} color="#011023" />
+              </TouchableOpacity>
+            </View>
+
+            {/* QR Code Container */}
+            <View style={{ 
+              marginTop: 28,
+              marginBottom: 16,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <QRCode
+                value={JSON.stringify({
+                  employeeId: user?.employeeId || ''
+                })}
+                size={250}
+              />
+            </View>
+
+            {/* <Text style={{ fontSize: 16, fontWeight: '700', color: '#011023', textTransform: 'uppercase', marginBottom: 4 }}>
+              {user?.name || 'Employee'}
+            </Text>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: '#64748b', letterSpacing: 1.5, marginBottom: 20 }}>
+              {user?.employeeId || '000000000'}
+            </Text> */}
+
+            {/* Information Points Section */}
+            <View style={{ marginTop: 12, width: '92%', alignSelf: 'center' }}>
+              {/* Point 1 */}
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 7, marginBottom: 5 }}>
+                <Info size={16} color="#64748b" style={{ marginTop: 2 }} />
+                <Text style={{ fontSize: 11.5, lineHeight: 16, flex: 1 }} className="text-slate-500 uppercase font-semibold text-justify">
+                  This verification QR code dynamically encodes your unique Employee ID. You can Use this for scanning and real-time validation by security personnel at the gate.
+                </Text>
+              </View>
+
+              {/* Point 2 */}
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 7, marginBottom: 5 }}>
+                <Info size={16} color="#64748b" style={{ marginTop: 2 }} />
+                <Text style={{ fontSize: 11.5, lineHeight: 16, flex: 1 }} className="text-slate-500 uppercase font-semibold text-justify">
+                  The encoded data is securely verified against our database to prevent any kind of tampering and guarantee only authorized employee has gained the entry.
+                </Text>
+              </View>
+
+              {/* Point 3 */}
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 7 }}>
+                <Info size={16} color="#64748b" style={{ marginTop: 2 }} />
+                <Text style={{ fontSize: 11.5, lineHeight: 16, flex: 1 }} className="text-slate-500 uppercase font-semibold text-justify">
+                  Ensure your profile details are correct and always up to date. As Any kind of changes in your details will instantly reflect during the QR verification process.
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
