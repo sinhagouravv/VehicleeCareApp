@@ -3,7 +3,7 @@ import { useFocusEffect } from 'expo-router';
 import { View, Text, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator, Alert, Modal, Platform, StatusBar, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, Bell, Trash2, Loader2, Calendar, Search, X, SlidersHorizontal } from 'lucide-react-native';
+import { ArrowLeft, Bell, Trash2, Loader2, CalendarDays, Search, X, SlidersHorizontal, History } from 'lucide-react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
@@ -27,6 +27,7 @@ export default function NotificationScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [unread, setUnread] = useState(0);
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
+  const [hasHistory, setHasHistory] = useState(false);
 
   const toggleExpand = useCallback((id: string) => {
     setExpandedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -35,7 +36,6 @@ export default function NotificationScreen() {
   const fetchNotifications = useCallback(async (isRefresh = false) => {
     try {
       if (isRefresh) setRefreshing(true);
-      else if (notifications.length === 0) setLoading(true);
 
       const storedUser = await SecureStore.getItemAsync('employeeUser');
       let empId = null;
@@ -81,7 +81,8 @@ export default function NotificationScreen() {
         return isAssigned;
       });
 
-      setNotifications(employeeNotifs);
+      setHasHistory(employeeNotifs.length > 30);
+      setNotifications(employeeNotifs.slice(0, 30));
       setUnread(employeeNotifs.filter((n: any) => !n.isRead).length);
 
       // Fetch users
@@ -100,7 +101,7 @@ export default function NotificationScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [notifications.length]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -182,12 +183,9 @@ export default function NotificationScreen() {
               NOTIFICATIONS
             </Text>
 
-            {/* Right: Calendar / Notification Dot */}
-            <TouchableOpacity onPress={() => router.push('/tabs/attendance')} className="relative">
-              <Calendar size={22} color="#011023" strokeWidth={2.5} />
-              {unread > 0 && (
-                <View className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-              )}
+            {/* Right: Notification History Link */}
+            <TouchableOpacity onPress={() => router.push('/screens/notification-history')} className="relative">
+              <CalendarDays size={22} color="#011023" strokeWidth={2.5} />
             </TouchableOpacity>
         </View>
       </SafeAreaView>
