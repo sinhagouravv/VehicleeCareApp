@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, Dimensions, Animated, TextInput, ScrollView } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Dimensions, Animated, TextInput, ScrollView, Image } from 'react-native';
 import { router } from 'expo-router';
 import { X, User, LogOut, Settings, Search, CalendarCheck, FileText, ClipboardList, Lock, Edit, FilePlus, UserCheck, Star, History, Bug, FileSignature, Bell, Globe, Fingerprint, Smartphone, BarChart2, Info, Rocket, FileBadge, FileUp, Coins, Clock, Contact } from 'lucide-react-native';
 import * as SecureStore from 'expo-secure-store';
@@ -93,8 +93,16 @@ export default function Sidebar({ visible, onClose }: { visible: boolean, onClos
             zIndex: 50,
             paddingBottom: 10,
           }} className="items-center px-6 pt-16">
-            <View style={{marginVertical: 22 }} className="w-16 h-16 bg-white rounded-full justify-center items-center border border-slate-200 shadow-sm">
-              <User size={58} color="#011023" strokeWidth={1.5} />
+            <View style={{marginVertical: 22 }} className="w-16 h-16 bg-white rounded-full justify-center items-center border border-slate-200 shadow-sm overflow-hidden">
+              {user?.avatar ? (
+                <Image 
+                  source={{ uri: user.avatar }} 
+                  style={{ width: 62, height: 62, borderRadius: 31 }} 
+                  resizeMode="cover"
+                />
+              ) : (
+                <User size={58} color="#011023" strokeWidth={1.5} />
+              )}
             </View>
             <View className="mt-3 items-center">
               <Text className="font-bold text-[#011023] text-[18px] uppercase tracking-[-0.5px] text-center" numberOfLines={1}>{user?.name || 'Unknown Employee'}</Text>

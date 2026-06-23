@@ -522,8 +522,16 @@ export default function IdCardScreen() {
                         overflow: 'hidden'
                       }}
                     >
-                      <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#f1f5f9', justifyContent: 'center', alignItems: 'center' }}>
-                        <User size={50} color="#052558" strokeWidth={1.5} />
+                      <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#f1f5f9', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
+                        {user?.avatar ? (
+                          <Image
+                            source={{ uri: user.avatar }}
+                            style={{ width: 80, height: 80, borderRadius: 40 }}
+                            contentFit="cover"
+                          />
+                        ) : (
+                          <User size={50} color="#052558" strokeWidth={1.5} />
+                        )}
                       </View>
                     </View>
                   </View>
