@@ -1,19 +1,92 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Platform, StatusBar, ScrollView, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, Platform, StatusBar, ScrollView, ActivityIndicator, Modal, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, User, Mail, Phone, Hash, Briefcase, Building, Store, MapPin, Calendar, FileText, Shield, FileBadge, X, Info } from 'lucide-react-native';
+import { ArrowLeft, User, Mail, Phone, Hash, Briefcase, Building, Store, MapPin, Calendar, FileText, Shield, FileBadge, X, Info, Camera } from 'lucide-react-native';
 import * as SecureStore from 'expo-secure-store';
 import { BlurView } from 'expo-blur';
 import QRCode from 'react-native-qrcode-svg';
+import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
+import Constants from 'expo-constants';
+
+const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
+const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
+const API_URL = `http://${localIp}:5001`;
 
 export default function ProfileScreen() {
   const [user, setUser] = useState<any>(null);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     loadUser();
   }, []);
+
+  const pickAndUploadImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'We need gallery permissions to update your profile photo.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      if (result.canceled || !result.assets || result.assets.length === 0) {
+        return;
+      }
+
+      const selectedImage = result.assets[0];
+      const imageUri = selectedImage.uri;
+
+      setUploading(true);
+
+      const formData = new FormData();
+      const filename = imageUri.split('/').pop() || 'avatar.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : `image`;
+
+      formData.append('avatar', {
+        uri: Platform.OS === 'ios' ? imageUri.replace('file://', '') : imageUri,
+        name: filename,
+        type,
+      } as any);
+
+      const empId = user?._id || user?.id || user?.employeeId;
+      if (!empId) {
+        throw new Error('Employee ID not found.');
+      }
+
+      const response = await axios.post(`${API_URL}/api/employees/${empId}/avatar`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.success) {
+        const updatedEmployee = response.data.data;
+        const updatedUser = { ...user, avatar: updatedEmployee.avatar };
+        setUser(updatedUser);
+        
+        await SecureStore.setItemAsync('employeeUser', JSON.stringify(updatedUser));
+        
+        Alert.alert('Success', 'Profile photo updated successfully!');
+      } else {
+        throw new Error(response.data.message || 'Upload failed');
+      }
+    } catch (err: any) {
+      console.log('Error uploading image:', err);
+      Alert.alert('Upload Failed', err.message || 'An error occurred during upload.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const loadUser = async () => {
     try {
@@ -95,9 +168,45 @@ export default function ProfileScreen() {
                </View>
             </View>
             
-            <View className="w-24 h-24 bg-[#f8fafc] rounded-full justify-center items-center mb-4 border-2 border-slate-100 shadow-sm">
+            <TouchableOpacity 
+              activeOpacity={0.8}
+              onPress={pickAndUploadImage}
+              disabled={uploading}
+              className="w-24 h-24 bg-[#f8fafc] rounded-full justify-center items-center mb-4 border-2 border-slate-100 shadow-sm relative"
+            >
+              {uploading ? (
+                <ActivityIndicator size="small" color="#052558" />
+              ) : user?.avatar ? (
+                <Image 
+                  source={{ uri: user.avatar }} 
+                  style={{ width: 92, height: 92, borderRadius: 46 }} 
+                  resizeMode="cover"
+                />
+              ) : (
                 <User size={70} color="#052558" strokeWidth={1.5} />
-            </View>
+              )}
+              
+              {/* Camera Badge */}
+              <View 
+                style={{ 
+                  position: 'absolute', 
+                  bottom: -2, 
+                  right: -2, 
+                  backgroundColor: '#011023', 
+                  borderRadius: 14, 
+                  padding: 5, 
+                  borderWidth: 2, 
+                  borderColor: '#ffffff',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 2,
+                  elevation: 5
+                }}
+              >
+                <Camera size={12} color="#ffffff" strokeWidth={2.5} />
+              </View>
+            </TouchableOpacity>
 
             <Text style={{fontSize:17}} className="text-[30px] font-bold uppercase text-[#011023] text-center">
                 {user?.name || 'Unknown Employee'}
