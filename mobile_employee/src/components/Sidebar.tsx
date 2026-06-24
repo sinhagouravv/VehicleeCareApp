@@ -59,7 +59,7 @@ export default function Sidebar({ visible, onClose }: { visible: boolean, onClos
     // { name: 'Notification', icon: Bell, onPress: () => { onClose(); router.push({ pathname: '/screens/update-details', params: { title: 'Notifications' } }); } },
     { name: 'Overtime', icon: Clock, onPress: () => { onClose(); router.push('/screens/overtime'); } },
     // { name: 'Personal Details', icon: Edit, onPress: () => { onClose(); router.push({ pathname: '/screens/update-details', params: { title: 'Personal Details' } }); } },
-    { name: 'Profile', icon: User, onPress: () => { router.push('/screens/profile'); setTimeout(() => { onClose(); }, 50); } },
+    // { name: 'Profile', icon: User, onPress: () => { router.push('/screens/profile'); setTimeout(() => { onClose(); }, 50); } },
     { name: 'Release Notes', icon: Rocket, onPress: () => { onClose(); router.push('/screens/release-notes'); } },
     { name: 'Report a Bug', icon: Bug, onPress: () => { onClose(); router.push('/screens/report-bug'); } },
     // { name: 'Settings', icon: Settings, onPress: () => { onClose(); router.push('/tabs/settings'); } },
@@ -81,42 +81,49 @@ export default function Sidebar({ visible, onClose }: { visible: boolean, onClos
         <View style={{ width: width * 0.75, borderTopRightRadius: 24, borderBottomRightRadius: 23 }} className="bg-white h-full shadow-2xl overflow-hidden rounded-l-[30px]">
           
           {/* Header */}
-          <View style={{
-            backgroundColor: '#ffffff',
-            borderBottomWidth: 2,
-            borderBottomColor: '#f1f5f9',
-            elevation: 10,
-            shadowColor: '#000000',
-            shadowOffset: { width: 0, height: 5 },
-            shadowOpacity: 0.05,
-            shadowRadius: 8,
-            zIndex: 50,
-            paddingBottom: 10,
-          }} className="items-center px-6 pt-16">
-            <View style={{marginVertical: 22 }} className="w-16 h-16 bg-white rounded-full justify-center items-center border border-slate-200 shadow-sm overflow-hidden">
+          <TouchableOpacity 
+            activeOpacity={0.8}
+            onPress={() => {
+              router.push('/screens/profile');
+              setTimeout(() => { onClose(); }, 50);
+            }}
+            style={{
+              backgroundColor: '#ffffff',
+              borderBottomWidth: 2,
+              borderBottomColor: '#f1f5f9',
+              elevation: 10,
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 5 },
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              zIndex: 50,
+              paddingTop: 60,
+              paddingBottom: 13,
+            }} className="items-center px-6">
+            <View style={{ marginVertical: 15, width: 90, height: 90, borderRadius: 48 }} className="bg-white justify-center items-center border border-slate-200 shadow-sm overflow-hidden">
               {user?.avatar ? (
                 <Image 
                   source={{ uri: user.avatar }} 
-                  style={{ width: 62, height: 62, borderRadius: 31 }} 
+                  style={{ width: 92, height: 92, borderRadius: 46 }} 
                   resizeMode="cover"
                 />
               ) : (
-                <User size={58} color="#011023" strokeWidth={1.5} />
+                <User size={80} color="#011023" strokeWidth={1.5} />
               )}
             </View>
-            <View className="mt-3 items-center">
+            <View className="items-center">
               <Text className="font-bold text-[#011023] text-[18px] uppercase tracking-[-0.5px] text-center" numberOfLines={1}>{user?.name || 'Unknown Employee'}</Text>
-              <Text style={{fontSize:14 }} className="text-slate-800 font-semibold uppercase mt-1 text-center" numberOfLines={1}>
+              <Text style={{fontSize:14 }} className="text-slate-800 font-semibold uppercase mt-1.5 text-center" numberOfLines={1}>
                 {user?.employeeId || 'N/A'} <Text className="text-slate-300 mx-1"> 
                 <Text style={{ marginHorizontal: 5, transform: [{ translateY: -1 }] }} className="text-[#011023] text-[13px] font-semibold">|</Text>
                 </Text> {user?.role || 'Staff'}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
 
           {/* Search Bar */}
-          <View style={{paddingVertical:8, paddingHorizontal:15 }} className="mt-1">
+          <View style={{paddingVertical:11, paddingHorizontal:15 }} className="mt-1">
             <View className="flex-row bg-white rounded-2xl px-4 border border-slate-100 shadow-sm" style={{ alignItems: 'center' }}>
               <Search size={20} color="#64748b" strokeWidth={2} />
               <TextInput
@@ -138,7 +145,7 @@ export default function Sidebar({ visible, onClose }: { visible: boolean, onClos
           </View>
 
           {/* Links */}
-          <ScrollView bounces={false} style={{paddingHorizontal:18, paddingVertical:0 }} className="flex-1" showsVerticalScrollIndicator={false}>
+          <ScrollView bounces={false} style={{paddingHorizontal:18}} className="flex-1" showsVerticalScrollIndicator={false}>
             {filteredLinks.length > 0 ? (
               filteredLinks.map((link, index) => {
                 const Icon = link.icon;
@@ -146,8 +153,8 @@ export default function Sidebar({ visible, onClose }: { visible: boolean, onClos
                   <TouchableOpacity 
                     key={index}
                     onPress={link.onPress}
-                    style={{ gap: 15 }}
-                    className="flex-row items-center border-b border-slate-200 py-4">
+                    style={{ gap: 15, paddingVertical: 13 }}
+                    className="flex-row items-center border-b border-slate-200">
                     <Icon size={18} color="#052558" strokeWidth={2.5} />
                     <Text style={{fontSize:15}} className="font-semibold uppercase text-slate-800">{link.name}</Text>
                   </TouchableOpacity>
