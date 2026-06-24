@@ -18,6 +18,8 @@ export default function ProfileScreen() {
   const [user, setUser] = useState<any>(null);
   const [showQRModal, setShowQRModal] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [garageAddress, setGarageAddress] = useState<string>('');
+  const [garageName, setGarageName] = useState<string>('');
 
   useEffect(() => {
     loadUser();
@@ -92,7 +94,42 @@ export default function ProfileScreen() {
     try {
       const storedUserStr = await SecureStore.getItemAsync('employeeUser');
       if (storedUserStr) {
-        setUser(JSON.parse(storedUserStr));
+        const parsedUser = JSON.parse(storedUserStr);
+        setUser(parsedUser);
+        if (parsedUser.garageLocation) {
+          setGarageAddress(parsedUser.garageLocation);
+        }
+        if (parsedUser.garageName) {
+          setGarageName(parsedUser.garageName);
+        }
+        
+        const empId = parsedUser.employeeId || parsedUser.id || parsedUser._id;
+        if (empId) {
+          try {
+            const empRes = await axios.get(`${API_URL}/api/employees/${empId}`);
+            if (empRes.data.success && empRes.data.data) {
+              const freshUser = empRes.data.data;
+              setUser(freshUser);
+              await SecureStore.setItemAsync('employeeUser', JSON.stringify(freshUser));
+              
+              if (freshUser.garageId) {
+                try {
+                  const garageRes = await axios.get(`${API_URL}/api/garages/${freshUser.garageId}`);
+                  if (garageRes.data.success && garageRes.data.data) {
+                    const garageData = garageRes.data.data;
+                    const addressStr = garageData.address || `${garageData.district || ''} ${garageData.state || ''}`.trim() || 'N/A';
+                    setGarageAddress(addressStr);
+                    setGarageName(garageData.name || 'N/A');
+                  }
+                } catch (garageErr) {
+                  console.log('Error fetching garage details in profile:', garageErr);
+                }
+              }
+            }
+          } catch (fetchErr) {
+            console.log('Error fetching fresh employee details for profile:', fetchErr);
+          }
+        }
       }
     } catch (e) {
       console.log('Error loading user', e);
@@ -159,9 +196,9 @@ export default function ProfileScreen() {
         </View>
       </SafeAreaView>
       
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView bounces={false} className="flex-1" showsVerticalScrollIndicator={false}>
           {/* Profile Section Box */}
-          <View className="mx-5 mt-4 p-5 bg-white rounded-2xl shadow-sm border border-slate-100 items-center relative">
+          <View style={{padding: 8, marginTop: 17 }} className="mx-5 bg-white rounded-2xl shadow-sm border border-slate-100 items-center relative">
             <View className="absolute top-4 right-4">
                <View className="bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100">
                   {/* <Text className="text-emerald-600 font-bold text-[10px] uppercase tracking-widest">Active</Text> */}
@@ -172,14 +209,14 @@ export default function ProfileScreen() {
               activeOpacity={0.8}
               onPress={pickAndUploadImage}
               disabled={uploading}
-              className="w-24 h-24 bg-[#f8fafc] rounded-full justify-center items-center mb-4 border-2 border-slate-100 shadow-sm relative"
+              className="w-24 h-24 mt-4 bg-[#f8fafc] rounded-full justify-center items-center mb-4 border-2 border-slate-100 shadow-sm relative"
             >
               {uploading ? (
                 <ActivityIndicator size="small" color="#052558" />
               ) : user?.avatar ? (
                 <Image 
                   source={{ uri: user.avatar }} 
-                  style={{ width: 92, height: 92, borderRadius: 46 }} 
+                  style={{ width: 95, height: 95, borderRadius: 46 }} 
                   resizeMode="cover"
                 />
               ) : (
@@ -190,8 +227,8 @@ export default function ProfileScreen() {
               <View 
                 style={{ 
                   position: 'absolute', 
-                  bottom: -2, 
-                  right: -2, 
+                  bottom: -7, 
+                  right: -7.5, 
                   backgroundColor: '#011023', 
                   borderRadius: 14, 
                   padding: 5, 
@@ -204,14 +241,14 @@ export default function ProfileScreen() {
                   elevation: 5
                 }}
               >
-                <Camera size={12} color="#ffffff" strokeWidth={2.5} />
+                <Camera size={13} color="#ffffff" strokeWidth={2.5} />
               </View>
             </TouchableOpacity>
 
-            <Text style={{fontSize:17}} className="text-[30px] font-bold uppercase text-[#011023] text-center">
+            <Text style={{fontSize:20, marginTop: 6}} className="text-[30px] font-bold uppercase text-[#011023] text-center">
                 {user?.name || 'Unknown Employee'}
             </Text>
-            <View className="flex-row items-center mt-2 px-3 py-1.5 rounded-full w-full">
+            <View className="flex-row items-center px-3 py-1.5 rounded-full w-full">
               
               <View className="flex-1 flex-row justify-end items-center">
                 <Text className="text-[#011023] font-semibold text-[13.5px]">
@@ -229,7 +266,7 @@ export default function ProfileScreen() {
               <View className="flex-1 flex-row justify-start items-center">
                 <Text style={{ marginHorizontal: 5, transform: [{ translateY: -1 }] }} className="text-[#011023] text-[13px] font-semibold">|</Text>
                 <Text className="text-[#011023] uppercase font-semibold text-[13.5px]">
-                  {user?.status || 'verified'}
+                  {user?.shift || 'Morning'}
                 </Text>
               </View>
 
@@ -238,62 +275,88 @@ export default function ProfileScreen() {
 
           {/* Details Section Box */}
           <View className="mx-5 mt-4 mb-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-            <View style={{ backgroundColor: '#24292eff', paddingVertical: 13, borderTopLeftRadius: 16, borderTopRightRadius: 16, alignItems: 'center' }}>
+            <View style={{ backgroundColor: '#24292eff', paddingVertical: 12, borderTopLeftRadius: 16, borderTopRightRadius: 16, alignItems: 'center' }}>
                 <Text style={{ color: 'white', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}>Basic Details</Text>
             </View>
 
-            <View style={{ gap: 8, paddingHorizontal:17, paddingVertical:15 }}>
+            <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:12 }}>
                 <View className="flex-row items-center justify-between">
                   <Text className="text-slate-700 uppercase font-semibold pr-1">Phone </Text>
                   <Text className="text-[#011023] font-semibold uppercase text-right">{user?.phone || 'N/A'}</Text>
                 </View>
                 <View className="flex-row items-center justify-between">
                   <Text className="text-slate-700 uppercase font-semibold pr-1">Email Id</Text>
-                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.email || 'N/A'}</Text>
+                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.email ? user.email.replace(/gmail\.com/i, '') : 'N/A'}</Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-slate-700 uppercase font-semibold pr-1">Address</Text>
+                  <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">{user?.address || 'N/A'}</Text>
+                </View>
+                
+            </View>
+          </View>
+
+
+          {/* Legal Details Box */}
+          <View className="mx-5 mb-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+            <View style={{ backgroundColor: '#24282cff', paddingVertical: 12, borderTopLeftRadius: 16, borderTopRightRadius: 16, alignItems: 'center' }}>
+                <Text style={{ color: 'white', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}>Legal Documents</Text>
+            </View>
+            
+            <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:12 }}>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-slate-700 uppercase font-semibold pr-1">PAN CARD</Text>
+                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.panCard || 'N/A'}</Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-slate-700 uppercase font-semibold pr-1">Aadhar Card</Text>
+                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.adharCard || 'N/A'}</Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-slate-700 uppercase font-semibold pr-1">Voter Id Card</Text>
+                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.voterId || 'N/A'}</Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-slate-700 uppercase font-semibold pr-1">Driving License</Text>
+                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.drivingLicense || 'N/A'}</Text>
                 </View>
             </View>
           </View>
 
           {/* Garage Details Box */}
           <View className="mx-5 mb-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-            <View style={{ backgroundColor: '#24282cff', paddingVertical: 13, borderTopLeftRadius: 16, borderTopRightRadius: 16, alignItems: 'center' }}>
+            <View style={{ backgroundColor: '#24282cff', paddingVertical: 12, borderTopLeftRadius: 16, borderTopRightRadius: 16, alignItems: 'center' }}>
                 <Text style={{ color: 'white', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}>Garage Details</Text>
             </View>
             
-            <View style={{ gap: 8, paddingHorizontal:17, paddingVertical:15 }}>
+            <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:12 }}>
               <View className="flex-row items-center justify-between">
-                <Text className="text-slate-700 uppercase font-semibold pr-1">Id</Text>
-                <Text className="text-[#011023] font-semibold uppercase text-right">{user?.garageId || 'N/A'}</Text>
+                <Text className="text-slate-700 uppercase font-semibold pr-1">Garage Id</Text>
+                <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">{user?.garageId || 'N/A'}</Text>
               </View>
               <View className="flex-row items-center justify-between">
-                <Text className="text-slate-700 uppercase font-semibold pr-1">Joining Date</Text>
-                <Text className="text-[#011023] font-semibold uppercase text-right">{user?.createdAt ? `${new Date(user.createdAt).toLocaleDateString('en-GB').replace(/\//g, '-')} | ${new Date(user.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : 'N/A'}</Text>
+                <Text className="text-slate-700 uppercase font-semibold pr-1">Garage Name</Text>
+                <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">{garageName || 'N/A'}</Text>
+              </View>
+              <View className="flex-row items-center justify-between">
+                <Text className="text-slate-700 uppercase font-semibold pr-1">Joined At</Text>
+                <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">
+                  {user?.createdAt ? (() => {
+                    const d = new Date(user.createdAt);
+                    const day = d.getDate();
+                    const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+                    const month = monthNames[d.getMonth()];
+                    const year = d.getFullYear();
+                    return `${day} ${month} ${year}`;
+                  })() : 'N/A'} <Text style={{ marginHorizontal: 5, transform: [{ translateY: -1 }] }} className="text-[#011023] text-[13px] font-semibold">|</Text> {user?.createdAt ? new Date(user.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/:/g, '-') : 'N/A'}
+                </Text>
+              </View>
+              <View className="flex-row items-center justify-between">
+                <Text className="text-slate-700 uppercase font-semibold pr-1">Address</Text>
+                <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">{garageAddress || 'N/A'}</Text>
               </View>
             </View>
           </View>
-
-          {/* Legal Details Box */}
-          <View className="mx-5 mb-8 bg-white rounded-2xl shadow-sm border border-slate-100">
-            <View style={{ backgroundColor: '#24282cff', paddingVertical: 13, borderTopLeftRadius: 16, borderTopRightRadius: 16, alignItems: 'center' }}>
-                <Text style={{ color: 'white', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}>Legal Documents</Text>
-            </View>
-            
-            <View style={{ gap: 8, paddingHorizontal:17, paddingVertical:15 }}>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-slate-700 uppercase font-semibold pr-1">PAN</Text>
-                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.panCard || 'N/A'}</Text>
-                </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-slate-700 uppercase font-semibold pr-1">Aadhar</Text>
-                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.adharCard || 'N/A'}</Text>
-                </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-slate-700 uppercase font-semibold pr-1">Voter Id</Text>
-                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.voterId || 'N/A'}</Text>
-                </View>
-            </View>
-          </View>
-
         </ScrollView>
 
       {/* QR Code View Modal */}
