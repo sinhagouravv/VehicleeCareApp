@@ -368,7 +368,7 @@ export default function ProfileScreen() {
                   <Text style={{ color: '#05193aff', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}> Emergency Details</Text>
               </View>
                     
-              <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:10.5 }}>
+              <View style={{ gap: 4, paddingHorizontal:17, paddingVertical:10.5 }}>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">PAN CARD</Text>
                     <Text className="text-[#011023] font-semibold uppercase text-right">{user?.panCard || 'N/A'}</Text>
