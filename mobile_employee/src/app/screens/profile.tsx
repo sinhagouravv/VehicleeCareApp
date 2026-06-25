@@ -196,9 +196,8 @@ export default function ProfileScreen() {
         </View>
       </SafeAreaView>
       
-      <ScrollView bounces={false} className="flex-1" showsVerticalScrollIndicator={false}>
-          {/* Profile Section Box */}
-          <View style={{padding: 8, marginTop: 17 }} className="mx-5 bg-white rounded-2xl shadow-sm border border-slate-100 items-center relative">
+      {/* Profile Section Box */}
+      <View style={{padding: 8, marginTop: 17 }} className="mx-5 bg-white rounded-2xl shadow-sm border border-slate-100 items-center relative">
             <View className="absolute top-4 right-4">
                <View className="bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100">
                   {/* <Text className="text-emerald-600 font-bold text-[10px] uppercase tracking-widest">Active</Text> */}
@@ -209,7 +208,7 @@ export default function ProfileScreen() {
               activeOpacity={0.8}
               onPress={pickAndUploadImage}
               disabled={uploading}
-              className="w-24 h-24 mt-4 bg-[#f8fafc] rounded-full justify-center items-center mb-4 border-2 border-slate-100 shadow-sm relative"
+              className="w-24 h-24 mt-3 bg-[#f8fafc] rounded-full justify-center items-center mb-4 border-2 border-slate-100 shadow-sm relative"
             >
               {uploading ? (
                 <ActivityIndicator size="small" color="#052558" />
@@ -273,91 +272,123 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Details Section Box */}
-          <View className="mx-5 mt-4 mb-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-            <View style={{ backgroundColor: '#24292eff', paddingVertical: 12, borderTopLeftRadius: 16, borderTopRightRadius: 16, alignItems: 'center' }}>
-                <Text style={{ color: 'white', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}>Basic Details</Text>
+          {/* Scrollable details section */}
+          <ScrollView bounces={false} style={{ marginTop: 15, marginBottom: 12 }} className="flex-grow" showsVerticalScrollIndicator={false}>
+            {/* Details Section Box */}
+            <View className="mx-5 mb-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+              <View style={{ backgroundColor: '#f0f5fbff', paddingVertical: 12, borderTopLeftRadius: 10, borderTopRightRadius: 10, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' }}>
+                  <Text style={{ color: '#052558', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}>Basic Details</Text>
+              </View>
+
+              <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:10 }}>
+                <View className="flex-row items-center justify-between">
+                    <Text className="text-slate-700 uppercase font-semibold pr-1">DOB </Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.dob || 'N/A'}</Text>
+                  </View>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-slate-700 uppercase font-semibold pr-1">Phone </Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.phone || 'N/A'}</Text>
+                  </View>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-slate-700 uppercase font-semibold pr-1">Email Id</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.email ? user.email.replace(/gmail\.com/i, '') : 'N/A'}</Text>
+                  </View>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-slate-700 uppercase font-semibold pr-1">Address</Text>
+                    <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">{user?.address || 'N/A'}</Text>
+                  </View>
+                  
+              </View>
             </View>
 
-            <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:12 }}>
+            {/* Legal Details Box */}
+            <View className="mx-5 mb-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+              <View style={{ backgroundColor: '#f0f5fbff', paddingVertical: 12, borderTopLeftRadius: 10, borderTopRightRadius: 10, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' }}>
+                  <Text style={{ color: '#05193aff', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}>Legal Documents</Text>
+              </View>
+              
+              <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:10 }}>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-slate-700 uppercase font-semibold pr-1">PAN CARD</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.panCard || 'N/A'}</Text>
+                  </View>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-slate-700 uppercase font-semibold pr-1">Aadhar Card</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.adharCard || 'N/A'}</Text>
+                  </View>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-slate-700 uppercase font-semibold pr-1">Voter Id Card</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.voterId || 'N/A'}</Text>
+                  </View>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-slate-700 uppercase font-semibold pr-1">Driving License</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.drivingLicense || 'N/A'}</Text>
+                  </View>
+              </View>
+            </View>
+
+            {/* Garage Details Box */}
+            <View className="mx-5 mb-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+              <View style={{ backgroundColor: '#f0f5fbff', paddingVertical: 12, borderTopLeftRadius: 10, borderTopRightRadius: 10, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' }}>
+                  <Text style={{ color: '#052558', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}>Garage Details</Text>
+              </View>
+              
+              <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:11 }}>
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-slate-700 uppercase font-semibold pr-1">Phone </Text>
-                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.phone || 'N/A'}</Text>
+                  <Text className="text-slate-700 uppercase font-semibold pr-1">Garage Id</Text>
+                  <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">{user?.garageId || 'N/A'}</Text>
                 </View>
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-slate-700 uppercase font-semibold pr-1">Email Id</Text>
-                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.email ? user.email.replace(/gmail\.com/i, '') : 'N/A'}</Text>
+                  <Text className="text-slate-700 uppercase font-semibold pr-1">Garage Name</Text>
+                  <Text numberOfLines={1} style={{ maxWidth: '55%' }} className="text-[#011023] font-semibold uppercase text-right">{garageName || 'N/A'}</Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-slate-700 uppercase font-semibold pr-1">Joined At</Text>
+                  <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">
+                    {user?.createdAt ? (() => {
+                      const d = new Date(user.createdAt);
+                      const day = d.getDate();
+                      const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+                      const month = monthNames[d.getMonth()];
+                      const year = d.getFullYear();
+                      return `${day} ${month} ${year}`;
+                    })() : 'N/A'} <Text style={{ marginHorizontal: 5, transform: [{ translateY: -1 }] }} className="text-[#011023] text-[13px] font-semibold">|</Text> {user?.createdAt ? new Date(user.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/:/g, ':') : 'N/A'}
+                  </Text>
                 </View>
                 <View className="flex-row items-center justify-between">
                   <Text className="text-slate-700 uppercase font-semibold pr-1">Address</Text>
-                  <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">{user?.address || 'N/A'}</Text>
+                  <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">{garageAddress || 'N/A'}</Text>
                 </View>
-                
+              </View>
             </View>
-          </View>
 
-
-          {/* Legal Details Box */}
-          <View className="mx-5 mb-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-            <View style={{ backgroundColor: '#24282cff', paddingVertical: 12, borderTopLeftRadius: 16, borderTopRightRadius: 16, alignItems: 'center' }}>
-                <Text style={{ color: 'white', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}>Legal Documents</Text>
+              {/* Legal Details Box */}
+            <View className="mx-5 mb-1 bg-white rounded-2xl shadow-sm border border-slate-100">
+              <View style={{ backgroundColor: '#f0f5fbff', paddingVertical: 12, borderTopLeftRadius: 10, borderTopRightRadius: 10, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' }}>
+                  <Text style={{ color: '#05193aff', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}> Emergency Details</Text>
+              </View>
+                    
+              <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:10.5 }}>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-slate-700 uppercase font-semibold pr-1">PAN CARD</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.panCard || 'N/A'}</Text>
+                  </View>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-slate-700 uppercase font-semibold pr-1">Aadhar Card</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.adharCard || 'N/A'}</Text>
+                  </View>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-slate-700 uppercase font-semibold pr-1">Voter Id Card</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.voterId || 'N/A'}</Text>
+                  </View>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-slate-700 uppercase font-semibold pr-1">Driving License</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.drivingLicense || 'N/A'}</Text>
+                  </View>
+              </View>
             </View>
             
-            <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:12 }}>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-slate-700 uppercase font-semibold pr-1">PAN CARD</Text>
-                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.panCard || 'N/A'}</Text>
-                </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-slate-700 uppercase font-semibold pr-1">Aadhar Card</Text>
-                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.adharCard || 'N/A'}</Text>
-                </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-slate-700 uppercase font-semibold pr-1">Voter Id Card</Text>
-                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.voterId || 'N/A'}</Text>
-                </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-slate-700 uppercase font-semibold pr-1">Driving License</Text>
-                  <Text className="text-[#011023] font-semibold uppercase text-right">{user?.drivingLicense || 'N/A'}</Text>
-                </View>
-            </View>
-          </View>
-
-          {/* Garage Details Box */}
-          <View className="mx-5 mb-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-            <View style={{ backgroundColor: '#24282cff', paddingVertical: 12, borderTopLeftRadius: 16, borderTopRightRadius: 16, alignItems: 'center' }}>
-                <Text style={{ color: 'white', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}>Garage Details</Text>
-            </View>
-            
-            <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:12 }}>
-              <View className="flex-row items-center justify-between">
-                <Text className="text-slate-700 uppercase font-semibold pr-1">Garage Id</Text>
-                <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">{user?.garageId || 'N/A'}</Text>
-              </View>
-              <View className="flex-row items-center justify-between">
-                <Text className="text-slate-700 uppercase font-semibold pr-1">Garage Name</Text>
-                <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">{garageName || 'N/A'}</Text>
-              </View>
-              <View className="flex-row items-center justify-between">
-                <Text className="text-slate-700 uppercase font-semibold pr-1">Joined At</Text>
-                <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">
-                  {user?.createdAt ? (() => {
-                    const d = new Date(user.createdAt);
-                    const day = d.getDate();
-                    const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-                    const month = monthNames[d.getMonth()];
-                    const year = d.getFullYear();
-                    return `${day} ${month} ${year}`;
-                  })() : 'N/A'} <Text style={{ marginHorizontal: 5, transform: [{ translateY: -1 }] }} className="text-[#011023] text-[13px] font-semibold">|</Text> {user?.createdAt ? new Date(user.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/:/g, '-') : 'N/A'}
-                </Text>
-              </View>
-              <View className="flex-row items-center justify-between">
-                <Text className="text-slate-700 uppercase font-semibold pr-1">Address</Text>
-                <Text numberOfLines={1} style={{ maxWidth: '60%' }} className="text-[#011023] font-semibold uppercase text-right">{garageAddress || 'N/A'}</Text>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
 
       {/* QR Code View Modal */}
       <Modal visible={showQRModal} transparent animationType="slide">
