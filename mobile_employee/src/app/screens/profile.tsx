@@ -352,7 +352,7 @@ export default function ProfileScreen() {
                       const month = monthNames[d.getMonth()];
                       const year = d.getFullYear();
                       return `${day} ${month} ${year}`;
-                    })() : 'N/A'} <Text style={{ marginHorizontal: 5, transform: [{ translateY: -1 }] }} className="text-[#011023] text-[13px] font-semibold">|</Text> {user?.createdAt ? new Date(user.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/:/g, ':') : 'N/A'}
+                    })() : 'N/A'} <Text style={{ marginHorizontal: 6, transform: [{ translateY: -1 }] }} className="text-[#011023] text-[13px] font-semibold">|</Text> {user?.createdAt ? new Date(user.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/:/g, ':') : 'N/A'}
                   </Text>
                 </View>
                 <View className="flex-row items-center justify-between">
