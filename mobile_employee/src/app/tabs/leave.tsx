@@ -905,7 +905,6 @@ export default function LeaveScreen() {
                   onPress={() => handleDelete(selectedLeave?._id)} 
                   style={{ paddingVertical: 15, borderRadius: 18, alignItems: 'center', marginBottom: 10, borderWidth: 1.5, borderColor: '#fecdd3', backgroundColor: '#fff1f2', flexDirection: 'row', justifyContent: 'center' }}
                 >
-                  <Trash2 size={18} color="#be123c" />
                   <Text style={{ color: '#be123c', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13, marginLeft: 8 }}>Cancel Leave</Text>
                 </TouchableOpacity>
               )}
