@@ -310,19 +310,27 @@ export default function ProfileScreen() {
               <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:10 }}>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">PAN CARD</Text>
-                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.panCard || 'N/A'}</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">
+                      {user?.panCard ? (user.panCard.startsWith('http') ? 'Uploaded' : user.panCard) : 'N/A'}
+                    </Text>
                   </View>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">Aadhar Card</Text>
-                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.adharCard || 'N/A'}</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">
+                      {user?.adharCard ? (user.adharCard.startsWith('http') ? 'Uploaded' : user.adharCard) : 'N/A'}
+                    </Text>
                   </View>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">Voter Id Card</Text>
-                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.voterId || 'N/A'}</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">
+                      {user?.voterId ? (user.voterId.startsWith('http') ? 'Uploaded' : user.voterId) : 'N/A'}
+                    </Text>
                   </View>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">Driving License</Text>
-                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.drivingLicense || 'N/A'}</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">
+                      {user?.drivingLicense ? (user.drivingLicense.startsWith('http') ? 'Uploaded' : user.drivingLicense) : 'N/A'}
+                    </Text>
                   </View>
               </View>
             </View>
@@ -371,19 +379,27 @@ export default function ProfileScreen() {
               <View style={{ gap: 5, paddingHorizontal:17, paddingVertical:10.5 }}>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">PAN CARD</Text>
-                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.panCard || 'N/A'}</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">
+                      {user?.panCard ? (user.panCard.startsWith('http') ? 'Uploaded' : user.panCard) : 'N/A'}
+                    </Text>
                   </View>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">Aadhar Card</Text>
-                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.adharCard || 'N/A'}</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">
+                      {user?.adharCard ? (user.adharCard.startsWith('http') ? 'Uploaded' : user.adharCard) : 'N/A'}
+                    </Text>
                   </View>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">Voter Id Card</Text>
-                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.voterId || 'N/A'}</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">
+                      {user?.voterId ? (user.voterId.startsWith('http') ? 'Uploaded' : user.voterId) : 'N/A'}
+                    </Text>
                   </View>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">Driving License</Text>
-                    <Text className="text-[#011023] font-semibold uppercase text-right">{user?.drivingLicense || 'N/A'}</Text>
+                    <Text className="text-[#011023] font-semibold uppercase text-right">
+                      {user?.drivingLicense ? (user.drivingLicense.startsWith('http') ? 'Uploaded' : user.drivingLicense) : 'N/A'}
+                    </Text>
                   </View>
               </View>
             </View>
