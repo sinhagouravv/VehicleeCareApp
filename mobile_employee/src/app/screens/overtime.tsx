@@ -527,7 +527,7 @@ export default function OvertimeScreen() {
                   </View>
 
                   {/* Reason Input */}
-                  <Text style={{fontSize: 11.95 }} className="text-slate-600 font-semibold tracking-wider uppercase mb-3">Kindly provide a valid reason for Overtime</Text>
+                  <Text style={{fontSize: 11.85 }} className="text-slate-600 font-semibold tracking-wider uppercase mb-3">Kindly provide a valid reason for Overtime</Text>
                   <TextInput
                     placeholderTextColor="#94a3b8"
                     value={overtimeReason}
