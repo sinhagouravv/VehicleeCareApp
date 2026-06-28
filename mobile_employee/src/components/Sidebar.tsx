@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, Dimensions, Animated, TextInput, ScrollView, Image } from 'react-native';
 import { router } from 'expo-router';
-import { X, User, LogOut, Settings, Search, CalendarCheck, FileText, ClipboardList, Lock, Edit, FilePlus, UserCheck, Star, History, Bug, FileSignature, Bell, Globe, Fingerprint, Smartphone, BarChart2, Info, Rocket, FileBadge, FileUp, Coins, Clock, Contact } from 'lucide-react-native';
+import { X, User, LogOut, Settings, Search, CalendarCheck, FileText, ClipboardList, Lock, Edit, FilePlus, UserCheck, Star, History, Bug, FileSignature, Bell, Globe, Fingerprint, Smartphone, BarChart2, Info, Rocket, FileBadge, FileUp, Coins, Clock, Contact, Sparkles } from 'lucide-react-native';
 import * as SecureStore from 'expo-secure-store';
 
 const { width } = Dimensions.get('window');
@@ -50,6 +50,7 @@ export default function Sidebar({ visible, onClose }: { visible: boolean, onClos
     // { name: 'Change Password', icon: Lock, onPress: () => { onClose(); router.push({ pathname: '/tabs/settings', params: { action: 'change-password' } }); } },
     { name: 'Details', icon: FileBadge, onPress: () => { onClose(); router.push('/screens/details'); } },
     { name: 'Finance', icon: Coins, onPress: () => { onClose(); router.push('/screens/finance'); } },
+    { name: 'Make Up', icon: Sparkles, onPress: () => { onClose(); router.push('/screens/mark-up-work'); } },
     // { name: 'Check In', icon: UserCheck, onPress: () => { onClose(); /* router.push(''); */ } },
     // { name: 'History', icon: History, onPress: () => { onClose(); /* router.push(''); */ } },
     // { name: 'Language', icon: Globe, onPress: () => { onClose(); router.push({ pathname: '/screens/update-details', params: { title: 'Language' } }); } },
