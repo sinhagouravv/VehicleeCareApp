@@ -21,7 +21,7 @@ export default function FinanceScreen() {
             justifyContent: 'space-between',
             elevation: 10,
             shadowColor: '#000000',
-            shadowOffset: { width: 0, height: 9 },
+            shadowOffset: { width: 0, height: 8 },
             shadowOpacity: 0.05,
             shadowRadius: 5,
             zIndex: 50
