@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { View, Text, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator, Alert, Modal, Platform, StatusBar, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator, Alert, Modal, Platform, StatusBar, TextInput, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Bell, Trash2, Loader2, Search, X, SlidersHorizontal } from 'lucide-react-native';
+import { BlurView } from 'expo-blur';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
@@ -26,6 +27,12 @@ export default function NotificationHistoryScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
+
+  // Filter States
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [filterStatus, setFilterStatus] = useState('All');
+  const [tempFilterStatus, setTempFilterStatus] = useState('All');
 
   const toggleExpand = useCallback((id: string) => {
     setExpandedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -211,7 +218,10 @@ export default function NotificationHistoryScreen() {
                 </TouchableOpacity>
               )}
             </View>
-            <TouchableOpacity className="ml-3 px-4 bg-white rounded-2xl border border-slate-100 shadow-sm justify-center items-center">
+            <TouchableOpacity 
+              onPress={() => { setTempFilterStatus(filterStatus); setIsFilterModalOpen(true); }}
+              className="ml-3 px-4 bg-white rounded-2xl border border-slate-100 shadow-sm justify-center items-center"
+            >
               <SlidersHorizontal size={20} color="#011023" strokeWidth={2} />
             </TouchableOpacity>
           </View>
@@ -226,6 +236,11 @@ export default function NotificationHistoryScreen() {
           >
             {(() => {
               const filteredNotifications = notifications.filter((n: any) => {
+                // Filter by Status
+                const mapping = getMapping(n);
+                if (filterStatus !== 'All' && mapping.type !== filterStatus) return false;
+
+                // Filter by Search Query
                 if (!searchQuery) return true;
                 const lowerQuery = searchQuery.toLowerCase();
                 const customerName = (n.meta?.userName || n.meta?.name || n.message.split(' (')[0].split(' booked')[0] || '').toLowerCase();
@@ -300,6 +315,78 @@ export default function NotificationHistoryScreen() {
         </ScrollView>
         </View>
       )}
+      {/* Filter Modal */}
+      <Modal visible={isFilterModalOpen} animationType="fade" transparent={true} onRequestClose={() => setIsFilterModalOpen(false)}>
+        {isFilterModalOpen && (
+          <View className="flex-1 justify-center items-center">
+            <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
+            <TouchableOpacity activeOpacity={1} className="absolute inset-0" onPress={() => setIsFilterModalOpen(false)} />
+            <TouchableWithoutFeedback onPress={() => { if (isStatusDropdownOpen) setIsStatusDropdownOpen(false); }}>
+              <View className="bg-white rounded-[24px] shadow-2xl w-[340px]" style={{ backgroundColor: 'white', padding: 24, borderRadius: 24, width: 340, height: 220, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <View className="items-center relative justify-center flex-row">
+                  <Text className="text-[18px] font-bold text-[#011023] uppercase tracking-wide">Filter</Text>
+                </View>
+
+                <View className="flex-row items-center justify-center z-10 w-full">
+                  <View>
+                    <Text className="text-[14px] font-semibold text-slate-500 uppercase tracking-widest">Type in</Text>
+                  </View>
+                  <View className="relative" style={{ width: 130, marginLeft: 20 }}>
+                    <TouchableOpacity 
+                      onPress={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                      style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', paddingHorizontal: 16, height: 30, borderRadius: 24, borderWidth: 1, borderColor: '#e2e8f0', width: 130 }}
+                    >
+                      <Text style={{ fontWeight: '500', textTransform: 'uppercase', fontSize: 13, color: '#011023', letterSpacing: 0.5 }}>{tempFilterStatus}</Text>
+                    </TouchableOpacity>
+
+                    {isStatusDropdownOpen && (
+                      <View className="bg-white border border-slate-200 rounded-xl mt-1 shadow-sm overflow-hidden absolute top-full left-0 z-50" style={{ width: 130, maxHeight: 180 }}>
+                        <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled style={{ flexGrow: 0 }}>
+                          {['All', 'Booking', 'Leave', 'Overtime', 'Meeting'].map((statusOption) => (
+                            <TouchableOpacity
+                              key={statusOption}
+                              onPress={() => {
+                                setTempFilterStatus(statusOption);
+                                setIsStatusDropdownOpen(false);
+                              }}
+                              className={`flex-row items-center justify-center relative ${tempFilterStatus === statusOption ? 'bg-slate-50' : 'bg-white'}`}
+                              style={{ paddingVertical: 5 }}
+                            >
+                              <Text className={`font-semibold uppercase text-[14px] tracking-wide text-center ${tempFilterStatus === statusOption ? 'text-[#011023]' : 'text-slate-500'}`}>
+                                {statusOption}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                
+                {/* Action Buttons */}
+                <View className="flex-row border-t border-slate-100 justify-between items-center" style={{ paddingTop: 16, marginTop: 8, gap: 15 }}>
+                  <TouchableOpacity 
+                    onPress={() => setIsFilterModalOpen(false)} 
+                    style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', borderColor: '#e2e8f0', borderWidth: 1.5, borderRadius: 12, paddingVertical: 9 }}
+                  >
+                    <Text style={{ fontWeight: 'bold', color: '#3c4655ff', textTransform: 'uppercase', fontSize: 12, letterSpacing: 1 }}>Cancel</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    onPress={() => {
+                      setFilterStatus(tempFilterStatus);
+                      setIsFilterModalOpen(false);
+                    }} 
+                    style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#151a20ff', borderRadius: 12, paddingVertical: 9 }}
+                  >
+                    <Text style={{ fontWeight: 'bold', color: '#ffffff', textTransform: 'uppercase', fontSize: 12, letterSpacing: 1 }}>Apply</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        )}
+      </Modal>
     </View>
   );
 }
