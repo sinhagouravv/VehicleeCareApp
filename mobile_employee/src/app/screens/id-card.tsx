@@ -867,7 +867,7 @@ export default function IdCardScreen() {
               </View>
 
               {/* Reason Grid */}
-              <Text style={{ fontSize: 11.95, fontWeight: '600', color: '#64748b', textTransform: 'uppercase', marginBottom: 12 }}>
+              <Text style={{ fontSize: 11.75, fontWeight: '600', color: '#64748b', textTransform: 'uppercase', marginBottom: 12 }}>
                 Kindly select a valid Purpose for the Request
               </Text>
               <View className="flex-row mb-4" style={{ gap: 10 }}>
@@ -900,7 +900,7 @@ export default function IdCardScreen() {
               </View>
 
               {/* Appointment Section */}
-              <Text style={{ fontSize: 11.75, fontWeight: '600', color: '#64748b', textTransform: 'uppercase', marginBottom: 12 }} className="tracking-wide">
+              <Text style={{ fontSize: 11.70, fontWeight: '600', color: '#64748b', textTransform: 'uppercase', marginBottom: 12 }} className="tracking-wide">
                 Kindly Book an Appointment for the request
               </Text>
               <View className="flex-row mb-4" style={{ gap: 10, zIndex: 100, elevation: 100, position: 'relative' }}>

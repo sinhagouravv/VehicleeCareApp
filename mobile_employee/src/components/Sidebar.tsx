@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, Dimensions, Animated, TextInput, ScrollView, Image } from 'react-native';
 import { router } from 'expo-router';
-import { X, User, LogOut, Settings, Search, CalendarCheck, FileText, ClipboardList, Lock, Edit, FilePlus, UserCheck, Star, History, Bug, FileSignature, Bell, Globe, Fingerprint, Smartphone, BarChart2, Info, Rocket, FileBadge, FileUp, Coins, Clock, Contact, Sparkles } from 'lucide-react-native';
+import { X, User, LogOut, Settings, Search, CalendarCheck, FileText, ClipboardList, Lock, Edit, FilePlus, UserCheck, Star, History, Bug, FileSignature, Bell, Globe, Fingerprint, Smartphone, BarChart2, Info, Rocket, FileBadge, UploadCloud, Coins, Clock, Contact, Sparkles } from 'lucide-react-native';
 import * as SecureStore from 'expo-secure-store';
 
 const { width } = Dimensions.get('window');
@@ -65,7 +65,7 @@ export default function Sidebar({ visible, onClose }: { visible: boolean, onClos
     { name: 'Report a Bug', icon: Bug, onPress: () => { onClose(); router.push('/screens/report-bug'); } },
     // { name: 'Settings', icon: Settings, onPress: () => { onClose(); router.push('/tabs/settings'); } },
     // { name: 'Task Assigned', icon: ClipboardList, onPress: () => { onClose(); router.push('/tabs/task'); } },
-    { name: 'Upload Documents', icon: FileUp, onPress: () => { onClose(); router.push('/screens/upload-documents'); } },
+    { name: 'Upload Documents', icon: UploadCloud, onPress: () => { onClose(); router.push('/screens/upload-documents'); } },
     { name: 'Virtual ID Card', icon: Contact, onPress: () => { onClose(); router.push('/screens/id-card'); } },
     { name: 'View Reviews', icon: Star, onPress: () => { onClose(); /* router.push(''); */ } },
   ];
