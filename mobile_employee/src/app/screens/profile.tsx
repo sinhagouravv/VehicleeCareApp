@@ -408,7 +408,7 @@ export default function ProfileScreen() {
 
       {/* QR Code View Modal */}
       <Modal visible={showQRModal} transparent animationType="slide">
-        <View style={{ flex: 7, justifyContent: 'flex-end', alignItems: 'center' }}>
+        <View style={{ flex: 6, justifyContent: 'flex-end', alignItems: 'center' }}>
           <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
           
           {/* Backdrop Click to Close */}
