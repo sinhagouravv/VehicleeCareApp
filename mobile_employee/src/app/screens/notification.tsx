@@ -64,12 +64,15 @@ export default function NotificationScreen() {
 
       // Filter notifications for this employee ONLY
       const employeeNotifs = allNotifs.filter((n: any) => {
+        if (n.superCategory === 'garageNotification') return false;
+
         if (n.eventType === 'leave' || n.eventType === 'overtime' || n.eventType === 'meeting') {
           let userObj: any = {};
           if (storedUser) {
             try { userObj = JSON.parse(storedUser); } catch(e){}
           }
-          return n.meta?.employeeId === empId || n.meta?.employeeId === userObj.employeeId || n.meta?.employeeId === userObj.id || n.meta?.employeeId === userObj._id;
+          const isTargetEmp = n.meta?.employeeId === empId || n.meta?.employeeId === userObj.employeeId || n.meta?.employeeId === userObj.id || n.meta?.employeeId === userObj._id;
+          return isTargetEmp && (n.superCategory === 'employees_notification' || n.meta?.status);
         }
 
         if (n.eventType !== 'booking_created') return false;
@@ -164,8 +167,8 @@ export default function NotificationScreen() {
             backgroundColor: '#ffffff',
             borderBottomWidth: 1,
             borderBottomColor: '#f1f5f9',
-            height: Platform.OS === 'ios' ? 50 : 35,
-            paddingBottom: Platform.OS === 'ios' ? 10 : 5,
+            minHeight: 48,
+            paddingVertical: 8,
             paddingHorizontal: 19,
             flexDirection: 'row',
             alignItems: 'center',
@@ -307,7 +310,7 @@ export default function NotificationScreen() {
                     numberOfLines={isExpanded ? undefined : 2}
                     className={`leading-4.5 uppercase ${notif.eventType === 'booking_created' ? 'uppercase text-[13px] text-slate-600 font-semibold' : 'text-[13px] text-slate-600 font-semibold'}`}
                   >
-                    {notif.eventType === 'booking_created' ? <React.Fragment>A new Booking is being assigned to you for <Text className="text-slate-700 font-bold">{notif.meta?.service || 'service'}</Text> of <Text className="text-slate-700 font-bold">{notif.meta?.vehicle || 'vehicle'}</Text>. Kindly contact with your assigned team member's and complete the task within the time.</React.Fragment> : notif.message}
+                    {notif.eventType === 'booking_created' ? <React.Fragment>Dear Employee, A new task is assigned to you for <Text className="text-slate-700 font-bold">{notif.meta?.service || 'service'}</Text>. Kindly contact with the assigned team member's and complete the task within the time.</React.Fragment> : notif.message}
                   </Text>
                   
                   <View style={{ marginTop: 5 }} className="flex-row justify-start">
@@ -329,7 +332,7 @@ export default function NotificationScreen() {
             <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
             <TouchableOpacity activeOpacity={1} className="absolute inset-0" onPress={() => setIsFilterModalOpen(false)} />
             <TouchableWithoutFeedback onPress={() => { if (isStatusDropdownOpen) setIsStatusDropdownOpen(false); }}>
-              <View className="bg-white rounded-[24px] shadow-2xl w-[340px]" style={{ backgroundColor: 'white', padding: 24, borderRadius: 24, width: 340, height: 220, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <View className="bg-white rounded-[24px] shadow-2xl" style={{ backgroundColor: 'white', padding: 24, borderRadius: 24, width: '88%', maxWidth: 340, height: 220, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <View className="items-center relative justify-center flex-row">
                   <Text className="text-[18px] font-bold text-[#011023] uppercase tracking-wide">Filter</Text>
                 </View>
