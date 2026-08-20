@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Text, View, TextInput, TouchableOpacity, 
   KeyboardAvoidingView, Platform, Modal, ActivityIndicator, 
-  Keyboard, TouchableWithoutFeedback, Dimensions, Alert
+  Keyboard, TouchableWithoutFeedback, Dimensions, Alert, ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -193,9 +193,14 @@ export default function LoginScreen() {
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <SafeAreaView className="flex-1 justify-center items-center p-4">
-            
-            <View className={`w-full max-w-[420px] bg-white rounded-[40px] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.05)] overflow-hidden ${forgotPasswordStep > 0 ? 'scale-95 opacity-40' : 'scale-100 opacity-100'}`} style={{ transform: [{ translateY: -28 }] }}>
+          <SafeAreaView className="flex-1">
+            <ScrollView 
+              contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+              keyboardShouldPersistTaps="handled"
+            >
+            <View className={`w-full max-w-[420px] bg-white rounded-[40px] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.05)] overflow-hidden ${forgotPasswordStep > 0 ? 'scale-95 opacity-40' : 'scale-100 opacity-100'}`} style={{ transform: [{ translateY: 0 }] }}>
               <View className="items-center mb-10">
                 <View className="mb-4 justify-center items-center" style={{ width: 70, height: 60 }}>
                   <Image 
@@ -276,6 +281,7 @@ export default function LoginScreen() {
               </TouchableOpacity>
             </View>
 
+            </ScrollView>
           </SafeAreaView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -283,12 +289,12 @@ export default function LoginScreen() {
       {/* FORGOT PASSWORD MODAL */}
       <Modal visible={forgotPasswordStep > 0} transparent={true} animationType="fade" onRequestClose={() => setForgotPasswordStep(0)}>
         {forgotPasswordStep > 0 ? (
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
+          <View className="flex-1">
             <View className="flex-1 justify-center items-center">
               <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
               <TouchableOpacity activeOpacity={1} className="absolute inset-0" onPress={() => setForgotPasswordStep(0)} />
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View className="bg-white rounded-[24px] shadow-2xl" style={{ backgroundColor: 'white', paddingHorizontal: 24, paddingVertical: 24, borderRadius: 24, width: 350, marginTop: 30 }}>
+                <View className="bg-white rounded-[24px] shadow-2xl" style={{ backgroundColor: 'white', paddingHorizontal: 24, paddingVertical: 24, borderRadius: 24, width: '88%', maxWidth: 360, marginTop: 0 }}>
                   
                   <View className="flex-row justify-center items-center relative" style={{ marginBottom: 20 }}>
                     <Text className="text-[19px] font-bold text-[#011023] tracking-[-0.5px]">ACCOUNT RECOVERY</Text>
@@ -308,7 +314,7 @@ export default function LoginScreen() {
                         <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-widest">emp_ID</Text>
                         <TextInput
                           className="bg-white border border-slate-200 text-[#011023]"
-                          style={{ width: 220, height: 32, borderRadius: 14, paddingHorizontal: 16, fontSize: 13, fontWeight: '600' }}
+                          style={{ width: 200, height: 32, borderRadius: 14, paddingHorizontal: 16, fontSize: 13, fontWeight: '600' }}
                           // placeholder="Enter 9-digit ID"
                           placeholderTextColor="#cbd5e1"
                           keyboardType="numeric"
@@ -322,7 +328,7 @@ export default function LoginScreen() {
                         <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-widest">Email</Text>
                         <TextInput
                           className="bg-white border border-slate-200 text-[#011023]"
-                          style={{ width: 220, height: 32, borderRadius: 14, paddingHorizontal: 16, fontSize: 13, fontWeight: '600' }}
+                          style={{ width: 200, height: 32, borderRadius: 14, paddingHorizontal: 16, fontSize: 13, fontWeight: '600' }}
                           // placeholder="e.g. employee@vc.com"
                           placeholderTextColor="#cbd5e1"
                           keyboardType="email-address"
@@ -505,7 +511,7 @@ export default function LoginScreen() {
                 </View>
               </TouchableWithoutFeedback>
             </View>
-          </KeyboardAvoidingView>
+          </View>
         ) : null}
       </Modal>
 
