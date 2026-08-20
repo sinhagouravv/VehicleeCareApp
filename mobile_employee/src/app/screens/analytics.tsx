@@ -282,8 +282,8 @@ export default function AnalyticsScreen() {
           backgroundColor: '#ffffff',
           borderBottomWidth: 1,
           borderBottomColor: '#f1f5f9',
-          height: Platform.OS === 'ios' ? 50 : 35,
-          paddingBottom: Platform.OS === 'ios' ? 10 : 5,
+          minHeight: 48,
+          paddingVertical: 8,
           paddingHorizontal: 19,
           flexDirection: 'row',
           alignItems: 'center',
@@ -313,232 +313,225 @@ export default function AnalyticsScreen() {
         </View>
       </SafeAreaView>
 
-      <View className="flex-1 bg-slate-50 px-5" style={{ marginTop: 17, marginBottom: 16 }}>
-
-          {/* 2x2 Stats Grid */}
-          <View style={{ gap: 12, marginTop: 0, marginBottom: 12 }}>
-            {/* Row 1 */}
-            <View style={{ gap: 12 }} className="flex-row">
-              <View
-                className="flex-1 bg-white rounded-2xl border border-slate-200 p-4 flex-row items-center justify-between"
-                style={{
-                  elevation: 2,
-                  shadowColor: '#64748b',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.06,
-                  shadowRadius: 6
-                }}
-              >
-                <View className="flex-1 pr-2">
-                  <Text style={{ fontSize: 18, marginBottom: 6 }} className="font-semibold text-[#011023]">{taskCompletionRate}%</Text>
-                  <Text style={{ fontSize: 13.5 }} className="text-slate-400 font-semibold uppercase" numberOfLines={1}>Success Rate</Text>
-                </View>
-                <View className="w-10 h-10 rounded-xl bg-emerald-50 justify-center items-center">
-                  <CheckCircle size={20} color="#059669" strokeWidth={2.5} />
-                </View>
-              </View>
-
-              <View
-                className="flex-1 bg-white rounded-2xl border border-slate-200 p-4 flex-row items-center justify-between"
-                style={{
-                  elevation: 2,
-                  shadowColor: '#64748b',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.06,
-                  shadowRadius: 6
-                }}
-              >
-                <View className="flex-1 pr-2">
-                  <Text style={{ fontSize: 18, marginBottom: 6 }} className="font-semibold text-[#011023]">{avgWorkDuration}</Text>
-                  <Text style={{ fontSize: 13.5 }} className="text-slate-400 font-semibold uppercase text-[14px]" numberOfLines={1}>Avg Duration</Text>
-                </View>
-                <View className="w-10 h-10 rounded-xl bg-indigo-50 justify-center items-center">
-                  <Clock size={20} color="#4f46e5" strokeWidth={2.5} />
-                </View>
-              </View>
-            </View>
-
-            {/* Row 2 */}
-            <View style={{ gap: 12 }} className="flex-row">
-              <View
-                className="flex-1 bg-white rounded-2xl border border-slate-200 p-4 flex-row items-center justify-between"
-                style={{
-                  elevation: 2,
-                  shadowColor: '#64748b',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.06,
-                  shadowRadius: 6
-                }}
-              >
-                <View className="flex-1 pr-2">
-                  <Text style={{ fontSize: 18, marginBottom: 6 }} className="font-semibold text-[#011023]">{totalTasksCount}</Text>
-                  <Text style={{ fontSize: 13.5 }} className="text-slate-400 font-semibold uppercase text-[14px]" numberOfLines={1}>Total Tasks</Text>
-                </View>
-                <View className="w-10 h-10 rounded-xl bg-sky-50 justify-center items-center">
-                  <ClipboardList size={20} color="#0284c7" strokeWidth={2.5} />
-                </View>
-              </View>
-
-              <View
-                className="flex-1 bg-white rounded-2xl border border-slate-200 p-4 flex-row items-center justify-between"
-                style={{
-                  elevation: 2,
-                  shadowColor: '#64748b',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.06,
-                  shadowRadius: 6
-                }}
-              >
-                <View className="flex-1 pr-2">
-                  <Text style={{ fontSize: 18, marginBottom: 6 }} className="font-semibold text-[#011023]">{growthRate}</Text>
-                  <Text style={{ fontSize: 13.5 }} className="text-slate-400 font-semibold uppercase text-[14px]" numberOfLines={1}>Growth Rate</Text>
-                </View>
-                <View className={`w-10 h-10 rounded-xl ${growthBg} justify-center items-center`}>
-                  <GrowthIcon size={20} color={growthColor} strokeWidth={2.5} />
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* Work & Attendance Summary Card (Like Shift Status Card) */}
-          <View
-            className="bg-white rounded-2xl border border-slate-200"
-            style={{
-              elevation: 3,
-              paddingVertical: 15,
-              paddingHorizontal: 15,
-              marginBottom: 16,
-              shadowColor: '#64748b',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.08,
-              shadowRadius: 8
-            }}
-          >
-            <View style={{ marginBottom: 10 }} className="flex-row justify-between items-center">
-              <Text className="font-bold text-slate-800 uppercase tracking-wider text-[14px]">Attendance Summary</Text>
-              <View
-                className="border rounded-full items-center justify-center"
-                style={{
-                  backgroundColor: records.length === 0 ? '#f1f5f9' : (attendanceRate >= 85 ? '#dcfce7' : '#ffe4e6'),
-                  borderColor: records.length === 0 ? '#e2e8f0' : (attendanceRate >= 85 ? '#bbf7d0' : '#fecdd3'),
-                  paddingHorizontal: 8,
-                  paddingVertical: 1.5,
-                  borderWidth: 1
-                }}
-              >
-                <Text
-                  className="font-semibold uppercase text-[10.5px]"
-                  style={{ color: records.length === 0 ? '#475569' : (attendanceRate >= 85 ? '#166534' : '#be123c'), fontSize: 10.5 }}
-                >
-                  {records.length === 0 ? 'No Logs' : (attendanceRate >= 85 ? 'Excellent' : 'Needs Attention')}
-                </Text>
-              </View>
-            </View>
-
-            <View className="flex-row justify-between items-center mb-3">
-              <View className="flex-1 items-start justify-center">
-                <Text className="text-[12px] text-slate-500 font-semibold uppercase tracking-widest mb-2">Present Days</Text>
-                <Text className="text-[14px] font-semibold text-[#011023] uppercase truncate">
-                  {presentDaysCount} Days
-                </Text>
-              </View>
-              <View className="flex-1 items-end justify-center">
-                <Text className="text-[12px] text-slate-500 font-semibold uppercase tracking-widest mb-2 text-right">Approved Leaves</Text>
-                <Text className="text-[14px] font-semibold text-[#011023] uppercase truncate text-right">
-                  {approvedLeavesCount} Requests
-                </Text>
-              </View>
-            </View>
-
-            {/* Attendance Progress Bar */}
-            <View className="mt-1">
-              <View className="flex-row justify-between items-center mb-2">
-                <Text className="text-[11.5px] font-semibold text-slate-600 uppercase tracking-wider">Attendance Rate</Text>
-                <Text className="text-[12px] font-semibold text-[#011023]">{attendanceRate}%</Text>
-              </View>
-              <View style={{ flexDirection: 'row' }} className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                {attendanceRate > 0 && (
-                  <View
-                    style={{ flex: attendanceRate, backgroundColor: '#059669' }}
-                    className="h-full rounded-full"
-                  />
-                )}
-                {attendanceRate < 100 && (
-                  <View style={{ flex: 100 - attendanceRate }} />
-                )}
-              </View>
-            </View>
-          </View>
-
-          {/* Task Categories Breakdown Section (Like Active Tasks list) */}
-          <View style={{ flex: 1, marginBottom: 0 }}>
-            <View style={{ marginHorizontal: 0.5 }} className="flex-row justify-between items-center mb-3">
-              <Text className="font-bold text-slate-800 uppercase tracking-wide text-[13px] ml-1">Task Category Distribution</Text>
-            </View>
-
-            <ScrollView
-              className="flex-1"
-              showsVerticalScrollIndicator={false}
-              bounces={false}
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#011023']} />
-              }
-              contentContainerStyle={{ paddingBottom: 0 }}
+      <ScrollView
+        className="flex-1 bg-slate-50"
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 17, paddingBottom: 28 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#011023']} />
+        }
+      >
+        {/* 2x2 Stats Grid */}
+        <View style={{ gap: 12, marginTop: 0, marginBottom: 12 }}>
+          {/* Row 1 */}
+          <View style={{ gap: 12 }} className="flex-row">
+            <View
+              className="flex-1 bg-white rounded-2xl border border-slate-200 p-4 flex-row items-center justify-between"
+              style={{
+                elevation: 2,
+                shadowColor: '#64748b',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.06,
+                shadowRadius: 6
+              }}
             >
-              {categoryBreakdown.length === 0 ? (
-                <View className="bg-white border border-slate-200 rounded-2xl p-6 items-center justify-center">
-                  <ClipboardList size={26} color="#94a3b8" strokeWidth={2} />
-                  <Text className="text-slate-400 font-bold uppercase text-[11px] tracking-wider mt-2.5">No Task Data Available</Text>
-                </View>
-              ) : (
-                categoryBreakdown.map((item) => {
-                  const percentage = Math.round((item.count / totalTasksCount) * 100);
-                  return (
-                    <View
-                      key={item.name}
-                      className="bg-white border border-slate-200 rounded-2xl p-4"
-                      style={{
-                        marginBottom: 10.5,
-                        elevation: 2,
-                        shadowColor: '#64748b',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.04,
-                        shadowRadius: 5
-                      }}
-                    >
-                      <View style={{ marginBottom: 5 }} className="flex-row justify-between items-center ">
-                        <Text className="font-bold text-slate-800 text-[14px] uppercase flex-1 mr-2" numberOfLines={1}>
-                          {item.name}
-                        </Text>
-                        <Text style={{ width: '15%', textAlign: 'right' }} className="font-semibold text-slate-700 text-[12px]">
-                          {item.count} {item.count === 1 ? 'Task' : 'Tasks'}
-                        </Text>
-                      </View>
+              <View className="flex-1 pr-2">
+                <Text style={{ fontSize: 18, marginBottom: 6 }} className="font-semibold text-[#011023]">{taskCompletionRate}%</Text>
+                <Text style={{ fontSize: 13.5 }} className="text-slate-400 font-semibold uppercase" numberOfLines={1}>Success Rate</Text>
+              </View>
+              <View className="w-10 h-10 rounded-xl bg-emerald-50 justify-center items-center">
+                <CheckCircle size={20} color="#059669" strokeWidth={2.5} />
+              </View>
+            </View>
 
-                      {/* Horizontal progress bar for distribution */}
-                      <View className="flex-row items-center">
-                        <View style={{ flexDirection: 'row' }} className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden mr-3">
-                          {percentage > 0 && (
-                            <View
-                              style={{ flex: percentage, backgroundColor: '#554ecfff' }}
-                              className="h-full rounded-full"
-                            />
-                          )}
-                          {percentage < 100 && (
-                            <View style={{ flex: 100 - percentage }} />
-                          )}
-                        </View>
-                        <Text style={{ width: 32 }} className="text-[11px] font-bold text-slate-700 text-right">
-                          {percentage}%
-                        </Text>
-                      </View>
-                    </View>
-                  );
-                })
-              )}
-            </ScrollView>
+            <View
+              className="flex-1 bg-white rounded-2xl border border-slate-200 p-4 flex-row items-center justify-between"
+              style={{
+                elevation: 2,
+                shadowColor: '#64748b',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.06,
+                shadowRadius: 6
+              }}
+            >
+              <View className="flex-1 pr-2">
+                <Text style={{ fontSize: 18, marginBottom: 6 }} className="font-semibold text-[#011023]">{avgWorkDuration}</Text>
+                <Text style={{ fontSize: 13.5 }} className="text-slate-400 font-semibold uppercase text-[14px]" numberOfLines={1}>Avg Duration</Text>
+              </View>
+              <View className="w-10 h-10 rounded-xl bg-indigo-50 justify-center items-center">
+                <Clock size={20} color="#4f46e5" strokeWidth={2.5} />
+              </View>
+            </View>
+          </View>
+
+          {/* Row 2 */}
+          <View style={{ gap: 12 }} className="flex-row">
+            <View
+              className="flex-1 bg-white rounded-2xl border border-slate-200 p-4 flex-row items-center justify-between"
+              style={{
+                elevation: 2,
+                shadowColor: '#64748b',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.06,
+                shadowRadius: 6
+              }}
+            >
+              <View className="flex-1 pr-2">
+                <Text style={{ fontSize: 18, marginBottom: 6 }} className="font-semibold text-[#011023]">{totalTasksCount}</Text>
+                <Text style={{ fontSize: 13.5 }} className="text-slate-400 font-semibold uppercase text-[14px]" numberOfLines={1}>Total Tasks</Text>
+              </View>
+              <View className="w-10 h-10 rounded-xl bg-sky-50 justify-center items-center">
+                <ClipboardList size={20} color="#0284c7" strokeWidth={2.5} />
+              </View>
+            </View>
+
+            <View
+              className="flex-1 bg-white rounded-2xl border border-slate-200 p-4 flex-row items-center justify-between"
+              style={{
+                elevation: 2,
+                shadowColor: '#64748b',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.06,
+                shadowRadius: 6
+              }}
+            >
+              <View className="flex-1 pr-2">
+                <Text style={{ fontSize: 18, marginBottom: 6 }} className="font-semibold text-[#011023]">{growthRate}</Text>
+                <Text style={{ fontSize: 13.5 }} className="text-slate-400 font-semibold uppercase text-[14px]" numberOfLines={1}>Growth Rate</Text>
+              </View>
+              <View className={`w-10 h-10 rounded-xl ${growthBg} justify-center items-center`}>
+                <GrowthIcon size={20} color={growthColor} strokeWidth={2.5} />
+              </View>
+            </View>
           </View>
         </View>
+
+        {/* Work & Attendance Summary Card */}
+        <View
+          className="bg-white rounded-2xl border border-slate-200"
+          style={{
+            elevation: 3,
+            paddingVertical: 15,
+            paddingHorizontal: 15,
+            marginBottom: 16,
+            shadowColor: '#64748b',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.08,
+            shadowRadius: 8
+          }}
+        >
+          <View style={{ marginBottom: 10 }} className="flex-row justify-between items-center">
+            <Text className="font-bold text-slate-800 uppercase tracking-wider text-[14px]">Attendance Summary</Text>
+            <View
+              className="border rounded-full items-center justify-center"
+              style={{
+                backgroundColor: records.length === 0 ? '#f1f5f9' : (attendanceRate >= 85 ? '#dcfce7' : '#ffe4e6'),
+                borderColor: records.length === 0 ? '#e2e8f0' : (attendanceRate >= 85 ? '#bbf7d0' : '#fecdd3'),
+                paddingHorizontal: 8,
+                paddingVertical: 1.5,
+                borderWidth: 1
+              }}
+            >
+              <Text
+                className="font-semibold uppercase text-[10.5px]"
+                style={{ color: records.length === 0 ? '#475569' : (attendanceRate >= 85 ? '#166534' : '#be123c'), fontSize: 10.5 }}
+              >
+                {records.length === 0 ? 'No Logs' : (attendanceRate >= 85 ? 'Excellent' : 'Needs Attention')}
+              </Text>
+            </View>
+          </View>
+
+          <View className="flex-row justify-between items-center mb-3">
+            <View className="flex-1 items-start justify-center">
+              <Text className="text-[12px] text-slate-500 font-semibold uppercase tracking-widest mb-2">Present Days</Text>
+              <Text className="text-[14px] font-semibold text-[#011023] uppercase truncate">
+                {presentDaysCount} Days
+              </Text>
+            </View>
+            <View className="flex-1 items-end justify-center">
+              <Text className="text-[12px] text-slate-500 font-semibold uppercase tracking-widest mb-2 text-right">Approved Leaves</Text>
+              <Text className="text-[14px] font-semibold text-[#011023] uppercase truncate text-right">
+                {approvedLeavesCount} Requests
+              </Text>
+            </View>
+          </View>
+
+          {/* Attendance Progress Bar */}
+          <View className="mt-1">
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-[11.5px] font-semibold text-slate-600 uppercase tracking-wider">Attendance Rate</Text>
+              <Text className="text-[12px] font-semibold text-[#011023]">{attendanceRate}%</Text>
+            </View>
+            <View style={{ flexDirection: 'row' }} className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+              {attendanceRate > 0 && (
+                <View
+                  style={{ flex: attendanceRate, backgroundColor: '#059669' }}
+                  className="h-full rounded-full"
+                />
+              )}
+              {attendanceRate < 100 && (
+                <View style={{ flex: 100 - attendanceRate }} />
+              )}
+            </View>
+          </View>
+        </View>
+
+        {/* Task Categories Breakdown Section */}
+        <View style={{ marginBottom: 0 }}>
+          {categoryBreakdown.length === 0 ? (
+            <View className="bg-white border border-slate-200 rounded-2xl p-6 items-center justify-center">
+              <ClipboardList size={26} color="#94a3b8" strokeWidth={2} />
+              <Text className="text-slate-400 font-bold uppercase text-[11px] tracking-wider mt-2.5">No Task Data Available</Text>
+            </View>
+          ) : (
+            categoryBreakdown.map((item) => {
+              const percentage = Math.round((item.count / totalTasksCount) * 100);
+              return (
+                <View
+                  key={item.name}
+                  className="bg-white border border-slate-200 rounded-2xl p-4"
+                  style={{
+                    marginBottom: 10.5,
+                    elevation: 2,
+                    shadowColor: '#64748b',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.04,
+                    shadowRadius: 5
+                  }}
+                >
+                  <View style={{ marginBottom: 5 }} className="flex-row justify-between items-center ">
+                    <Text className="font-bold text-slate-800 text-[14px] uppercase flex-1 mr-2" numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                    <Text style={{ width: '20%', textAlign: 'right' }} className="font-semibold text-slate-700 text-[12px]">
+                      {item.count} {item.count === 1 ? 'Task' : 'Tasks'}
+                    </Text>
+                  </View>
+
+                  {/* Horizontal progress bar for distribution */}
+                  <View className="flex-row items-center">
+                    <View style={{ flexDirection: 'row' }} className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden mr-3">
+                      {percentage > 0 && (
+                        <View
+                          style={{ flex: percentage, backgroundColor: '#554ecfff' }}
+                          className="h-full rounded-full"
+                        />
+                      )}
+                      {percentage < 100 && (
+                        <View style={{ flex: 100 - percentage }} />
+                      )}
+                    </View>
+                    <Text style={{ width: 32 }} className="text-[11px] font-bold text-slate-700 text-right">
+                      {percentage}%
+                    </Text>
+                  </View>
+                </View>
+              );
+            })
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 }
