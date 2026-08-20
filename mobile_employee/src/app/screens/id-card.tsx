@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Platform, StatusBar, ScrollView, ActivityIndicator, Dimensions, Modal, Alert, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, TextInput, Animated } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, User, Mail, Phone, Hash, Calendar, Clock, Building, Info, X } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { BlurView } from 'expo-blur';
@@ -44,7 +44,8 @@ const formatDisplayDate = (dateStr: string) => {
   return dateStr;
 };
 
-const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, title }: any) => {
+const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, maxDateStr, onSelect, title }: any) => {
+  const insets = useSafeAreaInsets();
   const getNoon = (d?: Date) => {
     const nd = d ? new Date(d) : new Date();
     nd.setHours(12, 0, 0, 0);
@@ -58,16 +59,17 @@ const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, ti
   };
 
   const minDate = minDateStr ? parseLocalDate(minDateStr) : getNoon();
-  const maxDate = getNoon();
-  maxDate.setMonth(maxDate.getMonth() + 2);
+  const maxDate = maxDateStr ? parseLocalDate(maxDateStr) : (() => {
+    const d = getNoon();
+    d.setMonth(d.getMonth() + 2);
+    return d;
+  })();
 
-  const [tempDate, setTempDate] = useState<Date>(valueStr ? parseLocalDate(valueStr) : minDate);
+  const [tempDate, setTempDate] = useState<Date>(() => parseLocalDate(valueStr));
 
   useEffect(() => {
-    if (visible) {
-      setTempDate(valueStr ? parseLocalDate(valueStr) : minDate);
-    }
-  }, [visible, valueStr, minDateStr]);
+    setTempDate(parseLocalDate(valueStr));
+  }, [valueStr, visible]);
 
   if (!visible) return null;
 
@@ -113,7 +115,7 @@ const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, ti
 
   if (Platform.OS === 'ios') {
     return (
-      <View style={{ position: 'absolute', bottom: 0, alignSelf: 'center', width: '97%', zIndex: 9999, elevation: 9999, backgroundColor: 'white', borderTopLeftRadius: 28, borderTopRightRadius: 28, shadowColor: '#000', shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.15, shadowRadius: 20, paddingBottom: 30 }}>
+      <View style={{ position: 'absolute', bottom: 0, alignSelf: 'center', width: '100%', maxWidth: 500, zIndex: 9999, elevation: 9999, backgroundColor: 'white', borderTopLeftRadius: 28, borderTopRightRadius: 28, shadowColor: '#000', shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.15, shadowRadius: 20, paddingBottom: Math.max(insets.bottom + 10, 24) }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 20, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' }}>
           <Text className="font-bold text-slate-800 text-[16px]">{title}</Text>
           <TouchableOpacity onPress={handleDone}>
@@ -128,11 +130,10 @@ const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, ti
             minimumDate={minDate}
             maximumDate={maxDate}
             onChange={handleValueChange}
-            onDismiss={handleDismiss}
             textColor="#000000"
             themeVariant="light"
             locale="en-GB"
-            style={{ width: 320, alignSelf: 'center' }}
+            style={{ width: '100%', maxWidth: 340, alignSelf: 'center' }}
           />
         </View>
       </View>
@@ -147,13 +148,14 @@ const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, ti
       minimumDate={minDate}
       maximumDate={maxDate}
       onChange={handleValueChange}
-      onDismiss={handleDismiss}
       locale="en-GB"
     />
   );
 };
 
 const { width } = Dimensions.get('window');
+const cardWidth = Math.min(width - 36, 365);
+const cardHeight = Math.round(cardWidth * 1.526);
 
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
@@ -392,8 +394,8 @@ export default function IdCardScreen() {
             backgroundColor: '#ffffff',
             borderBottomWidth: 1,
             borderBottomColor: '#f1f5f9',
-            height: Platform.OS === 'ios' ? 50 : 35,
-            paddingBottom: Platform.OS === 'ios' ? 10 : 5,
+            minHeight: 48,
+            paddingVertical: 8,
             paddingHorizontal: 19,
             flexDirection: 'row',
             alignItems: 'center',
@@ -426,7 +428,7 @@ export default function IdCardScreen() {
       <ScrollView 
         bounces={false}
         overScrollMode="never"
-        contentContainerStyle={{ padding: 18 }}
+        contentContainerStyle={{ padding: 18, alignItems: 'center' }}
         showsVerticalScrollIndicator={false}
       >
         {loading ? (
@@ -437,7 +439,7 @@ export default function IdCardScreen() {
             <TouchableOpacity 
               activeOpacity={1} 
               onPress={toggleFlip} 
-              style={{ width: 365, height: 557, position: 'relative' }}
+              style={{ width: cardWidth, height: cardHeight, position: 'relative' }}
             >
               {/* Front Side */}
               <Animated.View 
@@ -445,8 +447,8 @@ export default function IdCardScreen() {
                 style={[
                   frontAnimatedStyle,
                   {
-                    width: 365,
-                    height: 557,
+                    width: cardWidth,
+                    height: cardHeight,
                     backgroundColor: '#ffffff',
                     borderRadius: 20,
                     borderWidth: 1,
@@ -632,8 +634,8 @@ export default function IdCardScreen() {
                 style={[
                   backAnimatedStyle,
                   {
-                    width: 365,
-                    height: 557,
+                    width: cardWidth,
+                    height: cardHeight,
                     backgroundColor: '#ffffff',
                     borderRadius: 20,
                     borderWidth: 1,
@@ -686,7 +688,7 @@ export default function IdCardScreen() {
 
                   {/* Information Points Section */}
                   <TouchableWithoutFeedback onPress={() => {}}>
-                    <View style={{ marginTop: 10, width: 309 }}>
+                    <View style={{ marginTop: 10, width: '100%' }}>
                       {/* Point 1 */}
                       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 7 }}>
                         {/* <Info size={16} color="#64748b" style={{ marginTop: 2 }} /> */}
@@ -779,7 +781,7 @@ export default function IdCardScreen() {
             </TouchableOpacity>
 
             {/* Information Points Section */}
-            <View style={{ marginTop: 15, width: 365 }} >
+            <View style={{ marginTop: 15, width: cardWidth }} >
               {/* Point 1 */}
               <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 7 }}>
                 <Info size={16} color="#64748b" style={{ marginTop: 15 }} />
