@@ -159,8 +159,8 @@ export default function NotificationHistoryScreen() {
             backgroundColor: '#ffffff',
             borderBottomWidth: 1,
             borderBottomColor: '#f1f5f9',
-            height: Platform.OS === 'ios' ? 50 : 35,
-            paddingBottom: Platform.OS === 'ios' ? 10 : 5,
+            minHeight: 48,
+            paddingVertical: 8,
             paddingHorizontal: 19,
             flexDirection: 'row',
             alignItems: 'center',
@@ -322,7 +322,7 @@ export default function NotificationHistoryScreen() {
             <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
             <TouchableOpacity activeOpacity={1} className="absolute inset-0" onPress={() => setIsFilterModalOpen(false)} />
             <TouchableWithoutFeedback onPress={() => { if (isStatusDropdownOpen) setIsStatusDropdownOpen(false); }}>
-              <View className="bg-white rounded-[24px] shadow-2xl w-[340px]" style={{ backgroundColor: 'white', padding: 24, borderRadius: 24, width: 340, height: 220, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <View className="bg-white rounded-[24px] shadow-2xl" style={{ backgroundColor: 'white', padding: 24, borderRadius: 24, width: '88%', maxWidth: 340, height: 220, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <View className="items-center relative justify-center flex-row">
                   <Text className="text-[18px] font-bold text-[#011023] uppercase tracking-wide">Filter</Text>
                 </View>
