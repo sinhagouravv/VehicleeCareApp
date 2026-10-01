@@ -65,8 +65,8 @@ export default function ReportBugScreen() {
             backgroundColor: '#ffffff',
             borderBottomWidth: 1,
             borderBottomColor: '#f1f5f9',
-            height: Platform.OS === 'ios' ? 50 : 35,
-            paddingBottom: Platform.OS === 'ios' ? 10 : 5,
+            minHeight: 48,
+            paddingVertical: 8,
             paddingHorizontal: 19,
             flexDirection: 'row',
             alignItems: 'center',
@@ -113,29 +113,6 @@ export default function ReportBugScreen() {
             value={title}
             onChangeText={setTitle}
           />
-
-          <Text className="text-slate-500 font-semibold text-xs uppercase mb-2">Severity Level</Text>
-          <View className="flex-row gap-2 mb-4">
-            {['Low', 'Medium', 'High', 'Critical'].map((level) => (
-              <TouchableOpacity
-                key={level}
-                onPress={() => setSeverity(level)}
-                className={`flex-1 py-2.5 rounded-xl border items-center justify-center ${
-                  severity === level
-                    ? 'bg-[#be123c] border-[#be123c]'
-                    : 'bg-[#f8fafc] border-slate-200'
-                }`}
-              >
-                <Text
-                  className={`text-[10px] font-bold uppercase tracking-wider ${
-                    severity === level ? 'text-white' : 'text-slate-600'
-                  }`}
-                >
-                  {level}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
 
           <Text className="text-slate-500 font-semibold text-xs uppercase mb-2">Description / Steps to Reproduce</Text>
           <TextInput
