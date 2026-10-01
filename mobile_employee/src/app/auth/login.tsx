@@ -194,94 +194,84 @@ export default function LoginScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <SafeAreaView className="flex-1">
-            <ScrollView 
-              contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}
-              showsVerticalScrollIndicator={false}
-              bounces={false}
-              keyboardShouldPersistTaps="handled"
-            >
-            <View className={`w-full max-w-[420px] bg-white rounded-[40px] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.05)] overflow-hidden ${forgotPasswordStep > 0 ? 'scale-95 opacity-40' : 'scale-100 opacity-100'}`} style={{ transform: [{ translateY: 0 }] }}>
-              <View className="items-center mb-10">
-                <View className="mb-4 justify-center items-center" style={{ width: 70, height: 60 }}>
-                  <Image 
-                    source={require('../../../assets/images/logo.svg')} 
-                    style={{ width: '100%', height: '100%' }} 
-                    contentFit="contain" 
-                  />
-                </View>
-                <Text className="text-slate-800 font-bold text-[15px] tracking-[1.5px] uppercase mb-2">vehicleecare</Text>
-                <Text className="text-[28px] font-bold text-[#011023] tracking-[-0.5px] uppercase">Employee Portal</Text>
-              </View>
-
-              <View className="mb-6">
-                {/* <Text className="text-[13.5px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-3">Employee ID</Text> */}
-                <View className="relative justify-center">
-                  <View className="absolute left-5 z-10 h-full justify-center">
-                    <User size={18} color="#94a3b8" /> 
+            <View className="flex-1 items-center justify-start px-3" style={{ paddingTop: 165 }}>
+              <View className={`w-full max-w-[420px] bg-white rounded-[40px] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.05)] overflow-hidden ${forgotPasswordStep > 0 ? 'scale-95 opacity-40' : 'scale-100 opacity-100'}`} style={{ transform: [{ translateY: 0 }] }}>
+                <View className="items-center mb-10">
+                  <View className="mb-1 justify-center items-center" style={{ width: 70, height: 50 }}>
+                    <Image 
+                      source={require('../../../assets/images/logo.svg')} 
+                      style={{ width: '100%', height: '100%' }} 
+                      contentFit="contain" 
+                    />
                   </View>
-                  <TextInput
-                    className="w-full bg-white border border-slate-100 shadow-sm rounded-[18px] pr-4 text-[15px] font-semibold text-[#011023] tracking-wider"
-                    style={{ paddingLeft: 46, paddingVertical: 12.5 }}
-                    placeholder="Employee ID"
-                    placeholderTextColor="#cbd5e1"
-                    keyboardType="number-pad"
-                    maxLength={9}
-                    value={employeeId}
-                    onChangeText={(text) => setEmployeeId(text.replace(/[^0-9]/g, ''))}
-                  />
+                  <Text className="text-slate-800 font-bold text-[15px] tracking-[1.5px] uppercase mb-2">vehicleecare</Text>
+                  <Text className="text-[28px] font-bold text-[#011023] tracking-[-0.5px] uppercase">Employee Portal</Text>
                 </View>
-              </View>
 
-              <View className="mb-8">
-                {/* <Text className="text-[13.5px] font-semibold text-slate-400 uppercase tracking-widest ml-1 mb-3">Password</Text> */}
-                <View className="relative justify-center">
-                  <View className="absolute left-5 z-10 h-full justify-center">
-                    <Lock size={18} color="#94a3b8" />
+                <View className="mb-5">
+                  <View className="flex-row items-center bg-white border border-slate-200 shadow-xs rounded-2xl px-3">
+                    <View className="justify-center items-center pr-5 py-3">
+                      <User size={18} color="#94a3b8" /> 
+                    </View>
+                    <View style={{ width: 1.25, height: 18, backgroundColor: '#e2e8f0', marginRight: 12, marginLeft: 8, borderRadius: 1 }} />
+                    <TextInput
+                      className="flex-1 text-[15px] font-semibold text-[#011023] tracking-wider"
+                      style={{ paddingVertical: 12.5 }}
+                      placeholderTextColor="#cbd5e1"
+                      keyboardType="number-pad"
+                      maxLength={9}
+                      value={employeeId}
+                      onChangeText={(text) => setEmployeeId(text.replace(/[^0-9]/g, ''))}
+                    />
                   </View>
-                  <TextInput
-                    className="w-full bg-white border border-slate-100 shadow-sm rounded-[18px] pr-12 text-[15px] font-semibold text-[#011023] tracking-widest"
-                    style={{ paddingLeft: 46, paddingVertical: 12 }}
-                    placeholder="Password"
-                    placeholderTextColor="#cbd5e1"
-                    secureTextEntry={!showPassword}
-                    value={password}
-                    onChangeText={setPassword}
-                  />
-                  <View className="absolute right-5 z-10 h-full justify-center">
-                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="p-1">
+                </View>
+
+                <View className="mb-4">
+                  <View className="flex-row items-center bg-white border border-slate-200 shadow-xs rounded-2xl px-3">
+                    <View className="justify-center items-center pr-2.5 py-3">
+                      <Lock size={18} color="#94a3b8" />
+                    </View>
+                    <View style={{ width: 1.25, height: 18, backgroundColor: '#e2e8f0', marginRight: 12, marginLeft: 8, borderRadius: 1 }} />
+                    <TextInput
+                      className="flex-1 text-[15px] font-semibold text-[#011023] tracking-widest"
+                      style={{ paddingVertical: 12 }}
+                      placeholderTextColor="#cbd5e1"
+                      secureTextEntry={!showPassword}
+                      value={password}
+                      onChangeText={setPassword}
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="p-1 ml-2">
                       {showPassword ? <EyeOff size={18} color="#94a3b8" /> : <Eye size={18} color="#94a3b8" />}
                     </TouchableOpacity>
                   </View>
                 </View>
-              </View>
 
-              <View className="flex-row items-center justify-between mb-8 px-1">
-                <TouchableOpacity onPress={() => setRememberMe(!rememberMe)} activeOpacity={1} className="flex-row items-center gap-2 group">
-                  <View className={`justify-center items-center shadow-sm bg-white border ${rememberMe ? 'border-slate-100' : 'border-slate-100'}`} style={{ width: 22.5, height: 20, borderRadius: 9 }}>
-                    {rememberMe && <Check size={15} color="#000000" strokeWidth={2.5} />} 
-                  </View>
-                  <Text className="text-[#052558] font-semibold text-[13.25px] tracking-tight" style={{ marginLeft: 2}}>Remember me</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => { setForgotPasswordStep(1); setError(''); }}>
-                  <Text className="text-[#052558] font-semibold text-[13px] tracking-tight">Forgot password?</Text>
+                <View className="flex-row items-center justify-between mb-8">
+                  <TouchableOpacity onPress={() => setRememberMe(!rememberMe)} activeOpacity={1} className="flex-row items-center gap-2 group">
+                    <View className={`justify-center items-center shadow-xs bg-white border ${rememberMe ? 'border-slate-200' : 'border-slate-200'}`} style={{ width: 22, height: 17, borderRadius: 9 }}>
+                      {rememberMe && <Check size={15} color="#000000" strokeWidth={2.5} />} 
+                    </View>
+                    <Text className="text-[#052558] font-semibold text-[13.25px] tracking-tight" style={{ marginLeft: 2}}>Remember me</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => { setForgotPasswordStep(1); setError(''); }}>
+                    <Text className="text-[#052558] font-semibold text-[13px] tracking-tight">Forgot password?</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity className="w-full rounded-[20px] overflow-hidden shadow-[0_8px_15px_rgba(5,37,88,0.15)] elevation-5" onPress={handleLogin} disabled={loading}>
+                  <LinearGradient
+                    colors={['#1c3a63', '#396395']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    className="w-full py-[18px] items-center"
+                  >
+                    <Text className="text-white font-bold text-[13px] p-4 text-center tracking-[2.5px] uppercase">
+                      {loading ? 'Logging in...' : 'Login'}
+                    </Text>
+                  </LinearGradient>
                 </TouchableOpacity>
               </View>
-
-              <TouchableOpacity className="w-full rounded-[20px] overflow-hidden shadow-[0_8px_15px_rgba(5,37,88,0.15)] elevation-5" onPress={handleLogin} disabled={loading}>
-                <LinearGradient
-                  colors={['#1c3a63', '#396395']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  className="w-full py-[18px] items-center"
-                >
-                  <Text className="text-white font-bold text-[13px] p-4 text-center tracking-[2.5px] uppercase">
-                    {loading ? 'Logging in...' : 'Login'}
-                  </Text>
-                </LinearGradient>
-              </TouchableOpacity>
             </View>
-
-            </ScrollView>
           </SafeAreaView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -399,7 +389,7 @@ export default function LoginScreen() {
                               borderWidth: 1,
                               borderColor: resetOtp.length === index ? '#10b981' : (resetOtp[index] ? '#f8fafc' : '#e2e8f0')
                             }}
-                            className={`bg-white items-center justify-center shadow-sm ${resetOtp.length === index ? 'bg-emerald-50/20' : ''}`}
+                            className={`bg-white items-center justify-center shadow-xs ${resetOtp.length === index ? 'bg-emerald-50/20' : ''}`}
                           >
                             <Text style={{fontSize: 28, marginTop: 8, marginLeft: 2, fontWeight: '500'}} className="font-semibold text-[#011023]">
                               {resetOtp[index] ? '*' : ''}
