@@ -4,10 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import { GenericFormSkeleton } from '../../components/Skeleton';
 
 export default function UpdateDetailsScreen() {
   const { title } = useLocalSearchParams();
   const screenTitle = title ? (title as string).toUpperCase() : 'UPDATE DETAILS';
+  const [loading, setLoading] = useState(true);
 
   // Notifications State
   const [turnOffNotifications, setTurnOffNotifications] = useState(false);
@@ -53,10 +55,13 @@ export default function UpdateDetailsScreen() {
         }
       } catch (e) {
         console.log('Error loading settings', e);
+      } finally {
+        setLoading(false);
       }
     };
     loadSettings();
   }, []);
+
 
   const toggleSetting = async (key: string, value: boolean, setter: React.Dispatch<React.SetStateAction<boolean>>) => {
     setter(value);
@@ -318,16 +323,21 @@ export default function UpdateDetailsScreen() {
     </View>
   );
 
+  if (loading) {
+    return <GenericFormSkeleton titleWidth={160} />;
+  }
+
   return (
     <View className="flex-1 bg-slate-50">
+
       <SafeAreaView edges={['top']} style={{ backgroundColor: '#ffffff', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, zIndex: 50 }}>
         <View style={{
             backgroundColor: '#ffffff',
             borderBottomWidth: 1,
             borderBottomColor: '#f1f5f9',
-            height: Platform.OS === 'ios' ? 50 : 35,
-            paddingBottom: Platform.OS === 'ios' ? 10 : 5,
-            paddingHorizontal: 15.6,
+            minHeight: 48,
+            paddingVertical: 8,
+            paddingHorizontal: 19,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { View, Text, TouchableOpacity, FlatList, RefreshControl, TextInput, Alert, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, RefreshControl, TextInput, Alert, Platform } from 'react-native';
 import { Search, X, LogIn, LogOut, CheckCircle, AlertCircle } from 'lucide-react-native';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { AttendanceSkeleton, SkeletonBlock } from '../../components/Skeleton';
 
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
@@ -120,9 +121,11 @@ export default function AttendanceScreen() {
             } else {
                 Alert.alert('Error', res.data.message || 'Check-in failed. Please try again.');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error("Check-in error:", err);
-            Alert.alert('Error', 'Connection failed. Please try again.');
+            const serverMessage = err.response?.data?.message || err.message || 'Check-in failed. Please try again.';
+            Alert.alert('Check-In', serverMessage);
+            fetchTodayStatus(user.employeeId || user.id || user._id, true);
         } finally {
             setActionLoading(false);
         }
@@ -137,11 +140,13 @@ export default function AttendanceScreen() {
                 fetchTodayStatus(user.employeeId || user.id || user._id, true);
                 Alert.alert('Success', 'Checked out successfully!');
             } else {
-                Alert.alert('Error', res.data.message || 'Check-out failed. Please try again.');
+                Alert.alert('Check-Out', res.data.message || 'Check-out failed. Please try again.');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error("Check-out error:", err);
-            Alert.alert('Error', 'Connection failed. Please try again.');
+            const serverMessage = err.response?.data?.message || err.message || 'Check-out failed. Please try again.';
+            Alert.alert('Check-Out', serverMessage);
+            fetchTodayStatus(user.employeeId || user.id || user._id, true);
         } finally {
             setActionLoading(false);
         }
@@ -195,22 +200,15 @@ export default function AttendanceScreen() {
         return matchesSearch;
     });
 
-    // const getLateThresholdTime = (shift: string) => {
-    //     switch (shift?.toLowerCase()) {
-    //         case 'evening': return '03:05 PM';
-    //         case 'night': return '09:05 PM';
-    //         default: return '09:05 AM'; // Morning
-    //     }
-    // };
-
     const renderActionCard = () => {
         if (loading && !todayRecord) {
             return (
-                <View className="bg-white rounded-[20px] p-5 mx-5 mb-5 shadow-sm border border-slate-100 flex items-center justify-center min-h-[100px]">
-                    <ActivityIndicator size="small" color="#011023" />
+                <View className="mx-5 mt-4 mb-4">
+                    <SkeletonBlock width="100%" height={48} borderRadius={16} />
                 </View>
             );
         }
+
 
         return (
             <View className="mx-5 mt-4 mb-4">
@@ -261,7 +259,7 @@ export default function AttendanceScreen() {
         const statusStyle = getStatusStyle(r.status);
         
         return (
-            <View style={{ marginHorizontal: 19, paddingTop: 10, paddingBottom: 11 }} className="bg-white rounded-2xl px-5 mb-3 shadow-sm border border-slate-100">
+            <View style={{ marginHorizontal: 19, paddingTop: 10, paddingBottom: 11 }} className="bg-white rounded-2xl px-4 mb-3 shadow-xs border border-slate-200">
                 {/* Header: Date & Status */}
                 <View className="flex-row justify-between items-center mb-2">
                     <Text style={{ fontSize: 14 }} className="font-semibold text-[#011023] uppercase tracking-wider">
@@ -275,7 +273,7 @@ export default function AttendanceScreen() {
                 </View>
 
                 {/* Check In / Out Info */}
-                <View className="flex-row justify-between items-center mb-1">
+                <View className="flex-row justify-between items-center mb-">
                     <View className="flex-1 items-start justify-center">
                         <Text className="text-[12px] text-slate-500 font-semibold uppercase tracking-widest mb-1">Check In</Text>
                         <Text className="text-[14px] font-semibold text-[#011023] uppercase truncate" numberOfLines={1}>{formatTime(r.checkIn)}</Text>
@@ -289,35 +287,30 @@ export default function AttendanceScreen() {
         );
     };
 
+    if (loading && !todayRecord) {
+        return <AttendanceSkeleton />;
+    }
+
     return (
         <View className="flex-1 bg-slate-50">
-
-
             {renderActionCard()}
 
-            {/* List */}
-            {loading && !todayRecord ? (
-                <View className="flex-1 justify-center items-center">
-                    <ActivityIndicator size="large" color="#011023" />
-                </View>
-            ) : (
-                <FlatList
-                    style={{ flex: 1 }}
-                    data={filteredRecords}
-                    keyExtractor={item => item._id}
-                    renderItem={renderRecordCard}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 0 }}
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#011023" />
-                    }
-                    ListEmptyComponent={
-                        <View className="items-center justify-center pt-10">
-                            <Text className="text-slate-400 font-bold uppercase tracking-widest text-[12px]">No Attendance Records Found</Text>
-                        </View>
-                    }
-                />
-            )}
+            <FlatList
+                style={{ flex: 1 }}
+                data={filteredRecords}
+                keyExtractor={item => item._id}
+                renderItem={renderRecordCard}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 0 }}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#011023" />
+                }
+                ListEmptyComponent={
+                    <View className="items-center justify-center pt-10">
+                        <Text className="text-slate-400 font-bold uppercase tracking-widest text-[12px]">No Attendance Records Found</Text>
+                    </View>
+                }
+            />
         </View>
     );
 }

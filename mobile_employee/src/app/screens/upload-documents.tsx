@@ -7,6 +7,7 @@ import * as SecureStore from 'expo-secure-store';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { UploadDocumentsSkeleton } from '../../components/Skeleton';
 
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
@@ -186,23 +187,20 @@ export default function UploadDocumentsScreen() {
   };
 
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-[#f5f7f9]">
-        <ActivityIndicator size="large" color="#011023" />
-      </View>
-    );
+    return <UploadDocumentsSkeleton />;
   }
 
   return (
     <View className="flex-1 bg-[#f5f7f9]">
+
       {/* Header with White Safe Area */}
       <SafeAreaView edges={['top']} style={{ backgroundColor: '#ffffff', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, zIndex: 50 }}>
         <View style={{
             backgroundColor: '#ffffff',
             borderBottomWidth: 1,
             borderBottomColor: '#f1f5f9',
-            height: Platform.OS === 'ios' ? 50 : 35,
-            paddingBottom: Platform.OS === 'ios' ? 10 : 5,
+            minHeight: 48,
+            paddingVertical: 8,
             paddingHorizontal: 19,
             flexDirection: 'row',
             alignItems: 'center',
