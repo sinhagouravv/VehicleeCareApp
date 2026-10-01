@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Switch, Modal, KeyboardAvoidingView, Platform, TextInput, TouchableWithoutFeedback, Alert, Keyboard } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { Bell, Moon, Lock, Fingerprint, Shield, HelpCircle, FileText, ChevronRight, ChevronUp, ChevronDown, LogOut, X, Smartphone, Edit, FileSignature, Eye, EyeOff, Globe } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -8,15 +9,15 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import OTPModal from '../../components/OTPModal';
+import { SettingsSkeleton } from '../../components/Skeleton';
 
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
 const API_URL = `http://${localIp}:5001`;
 
 export default function SettingsScreen() {
-  // const [pushEnabled, setPushEnabled] = useState(true);
-  // const [darkModeEnabled, setDarkModeEnabled] = useState(false);
-  // const [mfaEnabled, setMfaEnabled] = useState(false);
+  const insets = useSafeAreaInsets();
+  const [loading, setLoading] = useState(true);
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
   const [employee, setEmployee] = useState<any>(null);
   const [showOTPModal, setShowOTPModal] = useState(false);
@@ -36,10 +37,13 @@ export default function SettingsScreen() {
         }
       } catch (e) {
         console.log('Error loading settings and user info', e);
+      } finally {
+        setLoading(false);
       }
     };
     loadSettingsAndUser();
   }, []);
+
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState<{ title: string, text: string, showEnable?: boolean, showPasswordBtn?: boolean } | null>(null);
@@ -161,8 +165,13 @@ export default function SettingsScreen() {
     </TouchableOpacity>
   );
 
+  if (loading && !employee) {
+    return <SettingsSkeleton />;
+  }
+
   return (
     <View className="flex-1 bg-slate-50">
+
       <ScrollView bounces={false} className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 1, paddingTop: 10, flexGrow: 1 }}>
 
         {/* Preferences Section */}
@@ -213,9 +222,8 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        <View style={{ marginTop: 'auto' }}>
-          {/* Security Section */}
-          <View className="mt-3.75 mx-5">
+        {/* Security Section */}
+          <View className="mt-4 mx-5">
             <Text style={{ fontSize: 15, marginBottom: 10 }} className="text-slate-400 font-semibold uppercase tracking-widest ml-1">Security</Text>
             <View className="bg-white rounded-2xl border border-slate-200 overflow-hidden" style={{ elevation: 3, shadowColor: '#64748b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8 }}>
               <SettingItem
@@ -303,7 +311,6 @@ The VehicleeCare Employee App is created to make your work experience more organ
           {/* <Text className="text-center text-slate-800 font-semibold text-[12px] mt-4 uppercase tracking-widest">
             Version 1.0.0
           </Text> */}
-        </View>
 
       </ScrollView>
 
@@ -325,7 +332,7 @@ The VehicleeCare Employee App is created to make your work experience more organ
       >
         {modalVisible && (
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior={Platform.OS === 'ios' ? (showOTPModal ? undefined : 'padding') : (showOTPModal ? undefined : 'height')}
             style={{ flex: 1 }}
           >
             <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
@@ -347,8 +354,8 @@ The VehicleeCare Employee App is created to make your work experience more organ
               />
 
               {/* SUPPORT INFO SHEET VIEW (BOTTOM SHEET) */}
-              <View className="bg-white shadow-2xl overflow-hidden" style={{ height: (modalContent?.showEnable || modalContent?.showPasswordBtn) ? '65%' : '77%', width: '98%', borderRadius: 40, padding: 10 }}>
-                <View style={{ paddingTop: 15, paddingBottom: 20, paddingHorizontal: 10 }} className="flex-row justify-between items-center relative">
+              <View className="bg-white shadow-2xl overflow-hidden" style={{ maxHeight: (modalContent?.showEnable || modalContent?.showPasswordBtn) ? '65%' : '80%', width: '96%', maxWidth: 460, borderRadius: 32, padding: 14, paddingBottom: Math.max(insets.bottom + 10, 20) }}>
+                <View style={{ paddingTop: 12, paddingBottom: 15, paddingHorizontal: 10 }} className="flex-row justify-between items-center relative">
                   <View style={{ width: 20 }} />
                   <Text className="text-[18px] font-bold text-[#011023] text-center uppercase tracking-wide flex-1">
                     {modalContent?.title}
@@ -358,12 +365,12 @@ The VehicleeCare Employee App is created to make your work experience more organ
                   </TouchableOpacity>
                 </View>
                 <ScrollView bounces={false} style={{ paddingHorizontal: 12, paddingTop: 1 }} contentContainerStyle={{ paddingBottom: 1 }} showsVerticalScrollIndicator={false}>
-                  <Text style={{ fontSize: 12.75 }} className="text-slate-800 leading-5 font-semibold uppercase text-justify mb-4">
+                  <Text style={{ fontSize: 13.5 }} className="text-slate-800 leading-5 font-semibold uppercase text-justify mb-4">
                     {modalContent?.text}
                   </Text>
                 </ScrollView>
                 {(modalContent?.showEnable || modalContent?.showPasswordBtn) && (
-                  <View style={{ paddingHorizontal: 12, paddingBottom: 15, paddingTop: 5 }}>
+                  <View style={{ paddingHorizontal: 12, paddingBottom: 5, paddingTop: 5 }}>
                     <TouchableOpacity
                       onPress={async () => {
                         if (modalContent?.showPasswordBtn) {
@@ -424,9 +431,9 @@ The VehicleeCare Employee App is created to make your work experience more organ
                     }}
                   />
                   <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <View className="bg-white rounded-[24px] shadow-2xl" style={{ backgroundColor: 'white', padding: 24, borderRadius: 24, width: 360, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      <View className="items-center relative justify-center flex-row mb-10">
-                        <Text className="text-[18px] font-bold text-[#011023] uppercase tracking-wide">Change Password</Text>
+                    <View className="bg-white rounded-[24px] shadow-2xl" style={{ backgroundColor: 'white', padding: 22, borderRadius: 24, width: '88%', maxWidth: 360, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <View className="items-center relative justify-center flex-row mb-8">
+                        <Text className="text-[17px] font-bold text-[#011023] uppercase tracking-wide">Change Password</Text>
                         <TouchableOpacity
                           className="absolute right-0"
                           onPress={() => {

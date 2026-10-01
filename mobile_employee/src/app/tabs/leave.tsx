@@ -2,17 +2,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity, FlatList, RefreshControl, Modal, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Search, SlidersHorizontal, X, Plus, Clock, Calendar, Check, Trash2, Loader2, FileText, Activity } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { LeaveSkeleton } from '../../components/Skeleton';
 
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
 const API_URL = `http://${localIp}:5001`;
 
 const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, title }: any) => {
+  const insets = useSafeAreaInsets();
   const getNoon = (d?: Date) => {
     const nd = d ? new Date(d) : new Date();
     nd.setHours(12, 0, 0, 0);
@@ -29,13 +32,11 @@ const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, ti
   const maxDate = getNoon();
   maxDate.setMonth(maxDate.getMonth() + 2);
 
-  const [tempDate, setTempDate] = useState<Date>(valueStr ? parseLocalDate(valueStr) : minDate);
+  const [tempDate, setTempDate] = useState<Date>(() => parseLocalDate(valueStr));
 
   useEffect(() => {
-    if (visible) {
-      setTempDate(valueStr ? parseLocalDate(valueStr) : minDate);
-    }
-  }, [visible, valueStr, minDateStr]);
+    setTempDate(parseLocalDate(valueStr));
+  }, [valueStr, visible]);
 
   if (!visible) return null;
 
@@ -73,15 +74,9 @@ const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, ti
     }
   };
 
-  const handleDismiss = () => {
-    if (Platform.OS === 'android') {
-      onClose();
-    }
-  };
-
   if (Platform.OS === 'ios') {
     return (
-      <View style={{ position: 'absolute', bottom: 0, alignSelf: 'center', width: '97%', zIndex: 9999, elevation: 9999, backgroundColor: 'white', borderTopLeftRadius: 28, borderTopRightRadius: 28, shadowColor: '#000', shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.15, shadowRadius: 20, paddingBottom: 40 }}>
+      <View style={{ position: 'absolute', bottom: 0, alignSelf: 'center', width: '100%', maxWidth: 500, zIndex: 9999, elevation: 9999, backgroundColor: 'white', borderTopLeftRadius: 28, borderTopRightRadius: 28, shadowColor: '#000', shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.15, shadowRadius: 20, paddingBottom: Math.max(insets.bottom + 10, 24) }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 22, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' }}>
           <Text className="font-bold text-slate-800 text-[16px]">{title}</Text>
           <TouchableOpacity onPress={handleDone}>
@@ -96,11 +91,10 @@ const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, ti
             minimumDate={minDate}
             maximumDate={maxDate}
             onChange={handleValueChange}
-            onDismiss={handleDismiss}
             textColor="#000000"
             themeVariant="light"
             locale="en-GB"
-            style={{ width: 320, alignSelf: 'center' }}
+            style={{ width: '100%', maxWidth: 340, alignSelf: 'center' }}
           />
         </View>
       </View>
@@ -115,13 +109,13 @@ const NativeDatePicker = ({ visible, onClose, valueStr, minDateStr, onSelect, ti
       minimumDate={minDate}
       maximumDate={maxDate}
       onChange={handleValueChange}
-      onDismiss={handleDismiss}
       locale="en-GB"
     />
   );
 };
 
 export default function LeaveScreen() {
+  const insets = useSafeAreaInsets();
   const { action } = useLocalSearchParams();
   const router = useRouter();
 
@@ -493,10 +487,9 @@ export default function LeaveScreen() {
 
       {/* List */}
       {loading ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#011023" />
-        </View>
+        <LeaveSkeleton />
       ) : (
+
         <FlatList
           style={{ flex: 1 }}
           data={filteredLeaves}
@@ -525,106 +518,107 @@ export default function LeaveScreen() {
             <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
             <TouchableOpacity activeOpacity={1} onPress={() => { setIsApplyModalOpen(false); resetForm(); }} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
             
-            <View className="bg-[#f5f7f9] shadow-2xl overflow-hidden" style={{ maxHeight: '80%', width: '91%', borderRadius: 35 }}>
-              <View style={{ paddingTop: 22, paddingBottom: 15, paddingHorizontal: 20 }} className=" flex-row justify-between items-center relative">
+            <View className="bg-[#f5f7f9] shadow-2xl overflow-hidden" style={{ maxHeight: '85%', width: '92%', maxWidth: 440, borderRadius: 32 }}>
+              <View style={{ paddingTop: 22, paddingBottom: 15, paddingHorizontal: 20 }} className="flex-row justify-between items-center relative">
                 <View style={{ width: 20, paddingTop: 20 }} />
                 <Text className="text-[18px] font-bold text-[#011023] text-center uppercase tracking-wide flex-1">Apply For Leave</Text>
-                {/* <TouchableOpacity onPress={() => { setIsApplyModalOpen(false); resetForm(); }}>
-                  <X size={20} color="#011023" />
-                </TouchableOpacity> */}
               </View>
 
               <ScrollView className="p-6" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-                <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 100, elevation: 100 }}>
-                  <Text style={{ fontSize: 13}} className="font-semibold text-slate-500 uppercase tracking-widest">Leave Type</Text>
+                <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 100, elevation: 100, gap: 10 }}>
+                  <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-wider flex-1 mr-2" numberOfLines={1}>Leave Type</Text>
                   
-                  <TouchableOpacity 
-                    onPress={() => {
-                      setIsLeaveTypeDropdownOpen(!isLeaveTypeDropdownOpen);
-                      setIsLeavePeriodDropdownOpen(false);
-                      setIsStartTimeDropdownOpen(false);
-                      setIsEndTimeDropdownOpen(false);
-                    }}
-                    style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', paddingHorizontal: 16, height: 32, borderRadius: 14, borderWidth: 1, borderColor: '#e2e8f0', width: 215 }}
-                  >
-                    <Text style={{ fontWeight: '500', textTransform: 'uppercase', fontSize: 12.5, color: '#011023', letterSpacing: 0.5 }}>{formData.type}</Text>
-                  </TouchableOpacity>
+                  <View style={{ flex: 1.4, maxWidth: 220 }}>
+                    <TouchableOpacity 
+                      onPress={() => {
+                        setIsLeaveTypeDropdownOpen(!isLeaveTypeDropdownOpen);
+                        setIsLeavePeriodDropdownOpen(false);
+                        setIsStartTimeDropdownOpen(false);
+                        setIsEndTimeDropdownOpen(false);
+                      }}
+                      style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', paddingHorizontal: 12, height: 34, borderRadius: 14, borderWidth: 1, borderColor: '#e2e8f0', width: '100%' }}
+                    >
+                      <Text style={{ fontWeight: '500', textTransform: 'uppercase', fontSize: 12.5, color: '#011023', letterSpacing: 0.5 }} numberOfLines={1}>{formData.type}</Text>
+                    </TouchableOpacity>
 
-                  {isLeaveTypeDropdownOpen && (
-                    <View className="bg-white border border-slate-200 rounded-[18px] mt-1 shadow-sm overflow-hidden absolute top-full right-0 z-50" style={{ width: 215, borderRadius:14, maxHeight: 150 }}>
-                      <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
-                        {['', 'Sick Leave', 'Casual Leave', 'Planned Leave', 'Emergency Leave'].map((type) => (
-                          <TouchableOpacity
-                            key={type}
-                            onPress={() => {
-                              setFormData({...formData, type});
-                              setIsLeaveTypeDropdownOpen(false);
-                            }}
-                            className={`flex-row items-center justify-center relative ${formData.type === type ? 'bg-slate-50' : 'bg-white'}`}
-                            style={{ paddingVertical: 6 }}
-                          >
-                            <Text className={`font-semibold uppercase text-[12.5px] tracking-wide text-center ${formData.type === type ? 'text-[#011023]' : 'text-slate-500'}`}>
-                              {type}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )}
+                    {isLeaveTypeDropdownOpen && (
+                      <View className="bg-white border border-slate-200 rounded-[14px] mt-1 shadow-sm overflow-hidden absolute top-full left-0 right-0 z-50" style={{ width: '100%', maxHeight: 150 }}>
+                        <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
+                          {['', 'Sick Leave', 'Casual Leave', 'Planned Leave', 'Emergency Leave'].map((type) => (
+                            <TouchableOpacity
+                              key={type}
+                              onPress={() => {
+                                setFormData({...formData, type});
+                                setIsLeaveTypeDropdownOpen(false);
+                              }}
+                              className={`flex-row items-center justify-center relative ${formData.type === type ? 'bg-slate-50' : 'bg-white'}`}
+                              style={{ paddingVertical: 6 }}
+                            >
+                              <Text className={`font-semibold uppercase text-[12.5px] tracking-wide text-center ${formData.type === type ? 'text-[#011023]' : 'text-slate-500'}`}>
+                                {type}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    )}
+                  </View>
                 </View>
 
-                <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 90, elevation: 90 }}>
-                  <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-widest">Duration</Text>
+                <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 90, elevation: 90, gap: 10 }}>
+                  <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-wider flex-1 mr-2" numberOfLines={1}>Duration</Text>
                   
-                  <TouchableOpacity 
-                    onPress={() => {
-                      setIsLeavePeriodDropdownOpen(!isLeavePeriodDropdownOpen);
-                      setIsLeaveTypeDropdownOpen(false);
-                      setIsStartTimeDropdownOpen(false);
-                      setIsEndTimeDropdownOpen(false);
-                    }}
-                    style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', paddingHorizontal: 16, height: 32, borderRadius: 14, borderWidth: 1, borderColor: '#e2e8f0', width: 215 }}
-                  >
-                    <Text style={{ fontWeight: '500', textTransform: 'uppercase', fontSize: 12.5, color: '#011023', letterSpacing: 0.5 }}>{formData.leaveTime}</Text>
-                  </TouchableOpacity>
+                  <View style={{ flex: 1.4, maxWidth: 220 }}>
+                    <TouchableOpacity 
+                      onPress={() => {
+                        setIsLeavePeriodDropdownOpen(!isLeavePeriodDropdownOpen);
+                        setIsLeaveTypeDropdownOpen(false);
+                        setIsStartTimeDropdownOpen(false);
+                        setIsEndTimeDropdownOpen(false);
+                      }}
+                      style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', paddingHorizontal: 12, height: 34, borderRadius: 14, borderWidth: 1, borderColor: '#e2e8f0', width: '100%' }}
+                    >
+                      <Text style={{ fontWeight: '500', textTransform: 'uppercase', fontSize: 12.5, color: '#011023', letterSpacing: 0.5 }} numberOfLines={1}>{formData.leaveTime}</Text>
+                    </TouchableOpacity>
 
-                  {isLeavePeriodDropdownOpen && (
-                    <View className="bg-white border border-slate-200 rounded-2xl mt-1 shadow-sm overflow-hidden absolute top-full right-0 z-50" style={{ width: 215, borderRadius:14, maxHeight: 180 }}>
-                      <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
-                        {['', 'Full Day', 'Half Day'].map((time) => (
-                          <TouchableOpacity
-                            key={time}
-                            onPress={() => {
-                              let newStartTime = formData.startTime;
-                              if (time === 'Full Day') {
-                                newStartTime = '09:00';
-                              }
-                              const newEndTime = calculateEndTime(newStartTime, time);
-                              
-                              const updates: any = { leaveTime: time, startTime: newStartTime, endTime: newEndTime || formData.endTime };
-                              if (time === 'Half Day' && formData.startDate) {
-                                updates.endDate = formData.startDate;
-                              }
-                              
-                              setFormData({...formData, ...updates});
-                              setIsLeavePeriodDropdownOpen(false);
-                            }}
-                            className={`flex-row items-center justify-center relative ${formData.leaveTime === time ? 'bg-slate-50' : 'bg-white'}`}
-                            style={{ paddingVertical: 6 }}
-                          >
-                            <Text className={`font-semibold uppercase text-[12.5px] tracking-wide text-center ${formData.leaveTime === time ? 'text-[#011023]' : 'text-slate-500'}`}>
-                              {time}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )}
+                    {isLeavePeriodDropdownOpen && (
+                      <View className="bg-white border border-slate-200 rounded-[14px] mt-1 shadow-sm overflow-hidden absolute top-full left-0 right-0 z-50" style={{ width: '100%', maxHeight: 180 }}>
+                        <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
+                          {['', 'Full Day', 'Half Day'].map((time) => (
+                            <TouchableOpacity
+                              key={time}
+                              onPress={() => {
+                                let newStartTime = formData.startTime;
+                                if (time === 'Full Day') {
+                                  newStartTime = '09:00';
+                                }
+                                const newEndTime = calculateEndTime(newStartTime, time);
+                                
+                                const updates: any = { leaveTime: time, startTime: newStartTime, endTime: newEndTime || formData.endTime };
+                                if (time === 'Half Day' && formData.startDate) {
+                                  updates.endDate = formData.startDate;
+                                }
+                                
+                                setFormData({...formData, ...updates});
+                                setIsLeavePeriodDropdownOpen(false);
+                              }}
+                              className={`flex-row items-center justify-center relative ${formData.leaveTime === time ? 'bg-slate-50' : 'bg-white'}`}
+                              style={{ paddingVertical: 6 }}
+                            >
+                              <Text className={`font-semibold uppercase text-[12.5px] tracking-wide text-center ${formData.leaveTime === time ? 'text-[#011023]' : 'text-slate-500'}`}>
+                                {time}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    )}
+                  </View>
                 </View>
 
-                <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 80, elevation: 80 }}>
-                  <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-widest">Start Date</Text>
-                  <View className="flex-row gap-2" style={{ width: 215 }}>
+                <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 80, elevation: 80, gap: 10 }}>
+                  <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-wider flex-1 mr-2" numberOfLines={1}>Start Date</Text>
+                  <View className="flex-row gap-2" style={{ flex: 1.4, maxWidth: 220 }}>
                     <TouchableOpacity 
                       onPress={() => {
                         setIsStartDateModalOpen(true);
@@ -633,14 +627,14 @@ export default function LeaveScreen() {
                         setIsLeaveTypeDropdownOpen(false);
                         setIsLeavePeriodDropdownOpen(false);
                       }}
-                      className="bg-white border border-slate-200 flex-row items-center justify-center"
-                      style={{ width: '60%', height: 32, borderRadius: 10 }}
+                      className="bg-white border border-slate-200 flex-row items-center justify-center flex-1"
+                      style={{ height: 34, borderRadius: 10 }}
                     >
-                      <Text className={`font-semibold uppercase text-center text-[12px] tracking-widest ${formData.startDate ? 'text-[#011023]' : 'text-slate-400'}`}>
+                      <Text className={`font-semibold uppercase text-center text-[12px] tracking-wider ${formData.startDate ? 'text-[#011023]' : 'text-slate-400'}`}>
                         {formData.startDate}
                       </Text>
                     </TouchableOpacity>
-                    <View style={{ width: '35%' }}>
+                    <View style={{ width: 75 }}>
                       <TouchableOpacity 
                         disabled={formData.leaveTime === 'Full Day'}
                         onPress={() => {
@@ -649,10 +643,10 @@ export default function LeaveScreen() {
                           setIsLeaveTypeDropdownOpen(false);
                           setIsLeavePeriodDropdownOpen(false);
                         }}
-                        style={{ height: 32, borderRadius: 10 }}
+                        style={{ height: 34, borderRadius: 10, width: '100%' }}
                         className={`bg-white border border-slate-200 flex-row items-center justify-center ${formData.leaveTime === 'Full Day' ? 'opacity-80' : ''}`}
                       >
-                        <Text style={{ fontWeight: '600', textTransform: 'uppercase', fontSize: 12, color: '#011023', letterSpacing: 1 }}>{formData.startTime}</Text>
+                        <Text style={{ fontWeight: '600', textTransform: 'uppercase', fontSize: 12, color: '#011023', letterSpacing: 0.5 }}>{formData.startTime}</Text>
                       </TouchableOpacity>
 
                       {isStartTimeDropdownOpen && (
@@ -681,9 +675,9 @@ export default function LeaveScreen() {
                   </View>
                 </View>
 
-                <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 70, elevation: 70 }}>
-                  <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-widest">End Date</Text>
-                  <View className="flex-row gap-2" style={{ width: 215 }}>
+                <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 70, elevation: 70, gap: 10 }}>
+                  <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-wider flex-1 mr-2" numberOfLines={1}>End Date</Text>
+                  <View className="flex-row gap-2" style={{ flex: 1.4, maxWidth: 220 }}>
                     <TouchableOpacity 
                       disabled={formData.leaveTime === 'Half Day'}
                       onPress={() => {
@@ -693,14 +687,14 @@ export default function LeaveScreen() {
                         setIsLeaveTypeDropdownOpen(false);
                         setIsLeavePeriodDropdownOpen(false);
                       }}
-                      className={`border border-slate-200 flex-row items-center justify-center ${formData.leaveTime === 'Half Day' ? 'bg-slate-50 opacity-80' : 'bg-white'}`}
-                      style={{ width: '60%', height: 32, borderRadius: 10 }}
+                      className={`border border-slate-200 flex-row items-center justify-center flex-1 ${formData.leaveTime === 'Half Day' ? 'bg-slate-50 opacity-80' : 'bg-white'}`}
+                      style={{ height: 34, borderRadius: 10 }}
                     >
-                      <Text className={`font-semibold uppercase text-center text-[12px] tracking-widest ${formData.endDate ? 'text-[#011023]' : 'text-slate-400'}`}>
+                      <Text className={`font-semibold uppercase text-center text-[12px] tracking-wider ${formData.endDate ? 'text-[#011023]' : 'text-slate-400'}`}>
                         {formData.endDate}
                       </Text>
                     </TouchableOpacity>
-                    <View style={{ width: '35%' }}>
+                    <View style={{ width: 75 }}>
                       <TouchableOpacity 
                         disabled={formData.leaveTime === 'Full Day'}
                         onPress={() => {
@@ -709,10 +703,10 @@ export default function LeaveScreen() {
                           setIsLeaveTypeDropdownOpen(false);
                           setIsLeavePeriodDropdownOpen(false);
                         }}
-                        style={{ height: 32, borderRadius: 10 }}
+                        style={{ height: 34, borderRadius: 10, width: '100%' }}
                         className={`bg-white border border-slate-200 flex-row items-center justify-center ${formData.leaveTime === 'Full Day' ? 'opacity-80' : ''}`}
                       >
-                        <Text style={{ fontWeight: '600', textTransform: 'uppercase', fontSize: 12, color: '#011023', letterSpacing: 1 }}>{formData.endTime}</Text>
+                        <Text style={{ fontWeight: '600', textTransform: 'uppercase', fontSize: 12, color: '#011023', letterSpacing: 0.5 }}>{formData.endTime}</Text>
                       </TouchableOpacity>
 
                       {isEndTimeDropdownOpen && (
@@ -819,9 +813,9 @@ export default function LeaveScreen() {
           <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
           <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
           <TouchableOpacity activeOpacity={1} onPress={() => setIsViewModalOpen(false)} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
-          <View className="bg-white shadow-2xl overflow-hidden" style={{ maxHeight: '85%', width: '98%', borderRadius: 40, padding: 10 }}>
+          <View className="bg-white shadow-2xl overflow-hidden" style={{ maxHeight: '85%', width: '96%', maxWidth: 460, borderRadius: 32, padding: 14, paddingBottom: Math.max(insets.bottom + 10, 20) }}>
             {/* Modal Header */}
-            <View style={{ paddingTop: 15 }} className="px-5 flex-row justify-between items-center">
+            <View style={{ paddingTop: 12, paddingBottom: 8 }} className="px-3 flex-row justify-between items-center">
               <View>
                 <Text className="text-[18px] font-semibold text-[#011023] uppercase">Leave Details</Text>
                 <Text style={{ marginTop: 2 }} className="text-sm text-slate-700 font-semibold tracking-wider">ID: {selectedLeave?.leaveId}</Text>
@@ -831,9 +825,9 @@ export default function LeaveScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView bounces={false} className="p-5" contentContainerStyle={{ paddingBottom: 0 }}>
-              <Text style={{ fontSize: 15 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Overview</Text>
-              <View className="mb-3" style={{ paddingVertical: 10, gap: 5 }}>
+            <ScrollView bounces={false} className="p-3" contentContainerStyle={{ paddingBottom: 0 }}>
+              <Text style={{ fontSize: 14 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Overview</Text>
+              <View className="mb-3" style={{ paddingVertical: 8, gap: 6 }}>
                 <View className="flex-row items-center justify-between">
                   <Text className="text-slate-700 uppercase font-semibold pr-1">Leave Type</Text>
                   <Text className="text-[#011023] font-semibold uppercase text-right flex-shrink-1 pr-1">{selectedLeave?.type}</Text>
@@ -844,8 +838,8 @@ export default function LeaveScreen() {
                 </View>
               </View>
 
-              <Text style={{ fontSize: 15 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Dates & Duration</Text>
-              <View className="mb-3" style={{ paddingVertical: 10, gap: 5 }}>
+              <Text style={{ fontSize: 14 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Dates & Duration</Text>
+              <View className="mb-3" style={{ paddingVertical: 8, gap: 6 }}>
                 <View className="flex-row items-center justify-between">
                   <Text className="text-slate-700 uppercase font-semibold pr-1">Start Date</Text>
                   <Text className="text-[#011023] font-semibold uppercase text-right flex-shrink-1">
@@ -862,13 +856,13 @@ export default function LeaveScreen() {
                 </View>
               </View>
 
-              <Text style={{ fontSize: 15 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-2">Reason</Text>
-                <View >
+              <Text style={{ fontSize: 14 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-2">Reason</Text>
+                <View>
                   <Text className="font-semibold text-[#011023] text-[14px] uppercase text-justify mb-4">{selectedLeave?.reason}</Text>
                 </View>
 
-              <Text style={{ fontSize: 15 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Status & Duration</Text>
-              <View className="mb-3" style={{ paddingVertical: 1, gap: 5 }}>
+              <Text style={{ fontSize: 14 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Status & Duration</Text>
+              <View className="mb-3" style={{ paddingVertical: 1, gap: 6 }}>
                 <View className="flex-row items-center justify-between mt-2">
                   <Text className="text-slate-700 uppercase font-semibold pr-1">Status</Text>
                   <View className="rounded-full items-center justify-center" style={{ ...getStatusStyle(selectedLeave?.status), borderWidth: 1, paddingHorizontal: 10, paddingVertical: 2 }}>
@@ -884,7 +878,7 @@ export default function LeaveScreen() {
               
               {selectedLeave?.status !== 'Pending' && selectedLeave?.remarks && (
                 <>
-                  <Text style={{ fontSize: 15 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-2">Remarks</Text>
+                  <Text style={{ fontSize: 14 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-2">Remarks</Text>
                   <View>
                       <Text className="font-semibold text-[#011023] text-[14px] uppercase text-justify mb-2">{selectedLeave.remarks}</Text>
                   </View>
@@ -894,7 +888,7 @@ export default function LeaveScreen() {
               {selectedLeave?.status === 'Approved' && selectedLeave?.leaveTime === 'Full Day' && !selectedLeave?.leaveId?.endsWith('E') && (
                 <TouchableOpacity 
                   onPress={handleExtendLeave} 
-                  style={{ backgroundColor: '#011023', paddingVertical: 15, borderRadius: 18, alignItems: 'center', marginBottom: 5, marginTop: 20 }}
+                  style={{ backgroundColor: '#011023', paddingVertical: 15, borderRadius: 18, alignItems: 'center', marginBottom: 5, marginTop: 15 }}
                 >
                   <Text style={{ color: 'white', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13 }}>Extend Leave</Text>
                 </TouchableOpacity>
@@ -910,204 +904,208 @@ export default function LeaveScreen() {
               )}
             </ScrollView>
           </View>
-        
+        </View>
+        )}
+      </Modal>
+
       {/* Extend Leave Modal */}
-      {isExtendModalOpen && (
-        <View style={{ position: "absolute", top: 0, bottom: 0, left: 0, right: 0, zIndex: 9999, elevation: 9999 }}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
-            <TouchableOpacity activeOpacity={1} onPress={() => { setIsExtendModalOpen(false); resetForm(); }} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
-            
-            <View className="bg-[#f5f7f9] shadow-2xl overflow-hidden" style={{ maxHeight: '80%', width: '91%', borderRadius: 35 }}>
-              <View style={{ paddingTop: 22, paddingBottom: 7, paddingHorizontal: 20 }} className=" flex-row justify-between items-center relative">
-                <View style={{ width: 20, paddingTop: 20 }} />
-                <Text className="text-[18px] font-bold text-[#011023] text-center uppercase tracking-wide flex-1">Extend Leave</Text>
-                <TouchableOpacity onPress={() => { setIsExtendModalOpen(false); resetForm(); }}>
-                  <X size={20} color="#011023" />
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView bounces={false} className="p-6" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-                <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 100, elevation: 100 }}>
-                  <Text style={{ fontSize: 13}} className="font-semibold text-slate-500 uppercase tracking-widest">Leave Type</Text>
-                  
-                  <TouchableOpacity 
-                    disabled={true}
-                    style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', paddingHorizontal: 16, height: 32, borderRadius: 14, borderWidth: 1, borderColor: '#e2e8f0', width: 215, opacity: 0.6 }}
-                  >
-                    <Text style={{ fontWeight: '500', textTransform: 'uppercase', fontSize: 12.5, color: '#011023', letterSpacing: 0.5 }}>{formData.type}</Text>
+      <Modal visible={isExtendModalOpen} animationType="slide" transparent={true} onRequestClose={() => setIsExtendModalOpen(false)}>
+        {isExtendModalOpen && (
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
+              <TouchableOpacity activeOpacity={1} onPress={() => { setIsExtendModalOpen(false); resetForm(); }} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
+              
+              <View className="bg-[#f5f7f9] shadow-2xl overflow-hidden" style={{ maxHeight: '85%', width: '92%', maxWidth: 440, borderRadius: 32 }}>
+                <View style={{ paddingTop: 22, paddingBottom: 7, paddingHorizontal: 20 }} className="flex-row justify-between items-center relative">
+                  <View style={{ width: 20, paddingTop: 20 }} />
+                  <Text className="text-[18px] font-bold text-[#011023] text-center uppercase tracking-wide flex-1">Extend Leave</Text>
+                  <TouchableOpacity onPress={() => { setIsExtendModalOpen(false); resetForm(); }}>
+                    <X size={20} color="#011023" />
                   </TouchableOpacity>
                 </View>
 
-                <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 90, elevation: 90 }}>
-                  <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-widest">Duration</Text>
-                  
-                  <TouchableOpacity 
-                    disabled={true}
-                    style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', paddingHorizontal: 16, height: 32, borderRadius: 14, borderWidth: 1, borderColor: '#e2e8f0', width: 215, opacity: 0.6 }}
-                  >
-                    <Text style={{ fontWeight: '500', textTransform: 'uppercase', fontSize: 12.5, color: '#011023', letterSpacing: 0.5 }}>{formData.leaveTime}</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 80, elevation: 80 }}>
-                  <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-widest">Start Date</Text>
-                  <View className="flex-row gap-2" style={{ width: 215 }}>
-                    <TouchableOpacity 
-                      disabled={true}
-                      className="bg-slate-50 border border-slate-200 flex-row items-center justify-center"
-                      style={{ width: '60%', height: 32, borderRadius: 10, opacity: 0.6 }}
-                    >
-                      <Text className={`font-semibold uppercase text-center text-[12px] tracking-widest ${formData.startDate ? 'text-[#011023]' : 'text-slate-400'}`}>
-                        {formData.startDate}
-                      </Text>
-                    </TouchableOpacity>
-                    <View style={{ width: '35%' }}>
+                <ScrollView bounces={false} className="p-6" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+                  <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 100, elevation: 100, gap: 10 }}>
+                    <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-wider flex-1 mr-2" numberOfLines={1}>Leave Type</Text>
+                    
+                    <View style={{ flex: 1.4, maxWidth: 220 }}>
                       <TouchableOpacity 
                         disabled={true}
-                        style={{ height: 32, borderRadius: 10, opacity: 0.6 }}
-                        className="bg-slate-50 border border-slate-200 flex-row items-center justify-center"
+                        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', paddingHorizontal: 12, height: 34, borderRadius: 14, borderWidth: 1, borderColor: '#e2e8f0', width: '100%', opacity: 0.6 }}
                       >
-                        <Text style={{ fontWeight: '600', textTransform: 'uppercase', fontSize: 12, color: '#011023', letterSpacing: 1 }}>{formData.startTime}</Text>
+                        <Text style={{ fontWeight: '500', textTransform: 'uppercase', fontSize: 12.5, color: '#011023', letterSpacing: 0.5 }} numberOfLines={1}>{formData.type}</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
-                </View>
 
-                <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 70, elevation: 70 }}>
-                  <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-widest">End Date</Text>
-                  <View className="flex-row gap-2" style={{ width: 215 }}>
-                    <TouchableOpacity 
-                      disabled={formData.leaveTime === 'Half Day'}
-                      onPress={() => {
-                        setIsEndDateModalOpen(true);
-                        setIsStartTimeDropdownOpen(false);
-                        setIsEndTimeDropdownOpen(false);
-                        setIsLeaveTypeDropdownOpen(false);
-                        setIsLeavePeriodDropdownOpen(false);
-                      }}
-                      className={`border border-slate-200 flex-row items-center justify-center ${formData.leaveTime === 'Half Day' ? 'bg-slate-50 opacity-80' : 'bg-white'}`}
-                      style={{ width: '60%', height: 32, borderRadius: 10 }}
-                    >
-                      <Text className={`font-semibold uppercase text-center text-[12px] tracking-widest ${formData.endDate ? 'text-[#011023]' : 'text-slate-400'}`}>
-                        {formData.endDate}
-                      </Text>
-                    </TouchableOpacity>
-                    <View style={{ width: '35%' }}>
+                  <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 90, elevation: 90, gap: 10 }}>
+                    <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-wider flex-1 mr-2" numberOfLines={1}>Duration</Text>
+                    
+                    <View style={{ flex: 1.4, maxWidth: 220 }}>
                       <TouchableOpacity 
-                        disabled={formData.leaveTime === 'Full Day'}
+                        disabled={true}
+                        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', paddingHorizontal: 12, height: 34, borderRadius: 14, borderWidth: 1, borderColor: '#e2e8f0', width: '100%', opacity: 0.6 }}
+                      >
+                        <Text style={{ fontWeight: '500', textTransform: 'uppercase', fontSize: 12.5, color: '#011023', letterSpacing: 0.5 }} numberOfLines={1}>{formData.leaveTime}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 80, elevation: 80, gap: 10 }}>
+                    <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-wider flex-1 mr-2" numberOfLines={1}>Start Date</Text>
+                    <View className="flex-row gap-2" style={{ flex: 1.4, maxWidth: 220 }}>
+                      <TouchableOpacity 
+                        disabled={true}
+                        className="bg-slate-50 border border-slate-200 flex-row items-center justify-center flex-1"
+                        style={{ height: 34, borderRadius: 10, opacity: 0.6 }}
+                      >
+                        <Text className={`font-semibold uppercase text-center text-[12px] tracking-wider ${formData.startDate ? 'text-[#011023]' : 'text-slate-400'}`}>
+                          {formData.startDate}
+                        </Text>
+                      </TouchableOpacity>
+                      <View style={{ width: 75 }}>
+                        <TouchableOpacity 
+                          disabled={true}
+                          style={{ height: 34, borderRadius: 10, width: '100%', opacity: 0.6 }}
+                          className="bg-slate-50 border border-slate-200 flex-row items-center justify-center"
+                        >
+                          <Text style={{ fontWeight: '600', textTransform: 'uppercase', fontSize: 12, color: '#011023', letterSpacing: 0.5 }}>{formData.startTime}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+
+                  <View className="flex-row items-center justify-between mb-4 relative" style={{ zIndex: 70, elevation: 70, gap: 10 }}>
+                    <Text style={{ fontSize: 13 }} className="font-semibold text-slate-500 uppercase tracking-wider flex-1 mr-2" numberOfLines={1}>End Date</Text>
+                    <View className="flex-row gap-2" style={{ flex: 1.4, maxWidth: 220 }}>
+                      <TouchableOpacity 
+                        disabled={formData.leaveTime === 'Half Day'}
                         onPress={() => {
-                          setIsEndTimeDropdownOpen(!isEndTimeDropdownOpen);
+                          setIsEndDateModalOpen(true);
                           setIsStartTimeDropdownOpen(false);
+                          setIsEndTimeDropdownOpen(false);
                           setIsLeaveTypeDropdownOpen(false);
                           setIsLeavePeriodDropdownOpen(false);
                         }}
-                        style={{ height: 32, borderRadius: 10 }}
-                        className={`bg-white border border-slate-200 flex-row items-center justify-center ${formData.leaveTime === 'Full Day' ? 'opacity-80' : ''}`}
+                        className={`border border-slate-200 flex-row items-center justify-center flex-1 ${formData.leaveTime === 'Half Day' ? 'bg-slate-50 opacity-80' : 'bg-white'}`}
+                        style={{ height: 34, borderRadius: 10 }}
                       >
-                        <Text style={{ fontWeight: '600', textTransform: 'uppercase', fontSize: 12, color: '#011023', letterSpacing: 1 }}>{formData.endTime}</Text>
+                        <Text className={`font-semibold uppercase text-center text-[12px] tracking-wider ${formData.endDate ? 'text-[#011023]' : 'text-slate-400'}`}>
+                          {formData.endDate}
+                        </Text>
                       </TouchableOpacity>
+                      <View style={{ width: 75 }}>
+                        <TouchableOpacity 
+                          disabled={formData.leaveTime === 'Full Day'}
+                          onPress={() => {
+                            setIsEndTimeDropdownOpen(!isEndTimeDropdownOpen);
+                            setIsStartTimeDropdownOpen(false);
+                            setIsLeaveTypeDropdownOpen(false);
+                            setIsLeavePeriodDropdownOpen(false);
+                          }}
+                          style={{ height: 34, borderRadius: 10, width: '100%' }}
+                          className={`bg-white border border-slate-200 flex-row items-center justify-center ${formData.leaveTime === 'Full Day' ? 'opacity-80' : ''}`}
+                        >
+                          <Text style={{ fontWeight: '600', textTransform: 'uppercase', fontSize: 12, color: '#011023', letterSpacing: 0.5 }}>{formData.endTime}</Text>
+                        </TouchableOpacity>
 
-                      {isEndTimeDropdownOpen && (
-                        <View className="bg-white border border-slate-200 rounded-xl mt-1 shadow-sm overflow-hidden absolute top-full right-0 z-50" style={{ width: 75, maxHeight: 230 }}>
-                          <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
-                            {(formData.leaveTime === 'Full Day' ? ['', '21:00'] : ['', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']).map((time) => (
-                              <TouchableOpacity
-                                key={time}
-                                onPress={() => {
-                                  const newStartTime = calculateStartTime(time, formData.leaveTime);
-                                  setFormData({...formData, endTime: time, startTime: newStartTime || formData.startTime});
-                                  setIsEndTimeDropdownOpen(false);
-                                }}
-                                className={`flex-row items-center justify-center relative ${formData.endTime === time ? 'bg-slate-50' : 'bg-white'}`}
-                                style={{ paddingVertical: 7 }}
-                              >
-                                <Text className={`font-semibold uppercase text-[12px] tracking-wide text-center ${formData.endTime === time ? 'text-[#011023]' : 'text-slate-500'}`}>
-                                  {time}
-                                </Text>
-                              </TouchableOpacity>
-                            ))}
-                          </ScrollView>
-                        </View>
-                      )}
+                        {isEndTimeDropdownOpen && (
+                          <View className="bg-white border border-slate-200 rounded-xl mt-1 shadow-sm overflow-hidden absolute top-full right-0 z-50" style={{ width: 75, maxHeight: 230 }}>
+                            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
+                              {(formData.leaveTime === 'Full Day' ? ['', '21:00'] : ['', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']).map((time) => (
+                                <TouchableOpacity
+                                  key={time}
+                                  onPress={() => {
+                                    const newStartTime = calculateStartTime(time, formData.leaveTime);
+                                    setFormData({...formData, endTime: time, startTime: newStartTime || formData.startTime});
+                                    setIsEndTimeDropdownOpen(false);
+                                  }}
+                                  className={`flex-row items-center justify-center relative ${formData.endTime === time ? 'bg-slate-50' : 'bg-white'}`}
+                                  style={{ paddingVertical: 7 }}
+                                >
+                                  <Text className={`font-semibold uppercase text-[12px] tracking-wide text-center ${formData.endTime === time ? 'text-[#011023]' : 'text-slate-500'}`}>
+                                    {time}
+                                  </Text>
+                                </TouchableOpacity>
+                              ))}
+                            </ScrollView>
+                          </View>
+                        )}
+                      </View>
                     </View>
                   </View>
-                </View>
 
-                <Text style={{ fontSize: 12 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-3">Please provide a Reason for the leave</Text>
-                <TextInput 
-                  className="bg-white border rounded-xl px-4 py-4 font-semibold text-[#011023] mb-2"
-                  autoCapitalize="characters"
-                  multiline
-                  numberOfLines={3}
-                  style={{ 
-                    minHeight: 80, 
-                    textAlignVertical: 'top',
-                    borderColor: (formData.reason || '').trim().length > 0 && (formData.reason || '').trim().split(/\s+/).filter(w => w.length > 0).length < 10 ? '#f87171' : '#e2e8f0'
-                  }}
-                  value={formData.reason}
-                  onChangeText={(t) => setFormData({...formData, reason: t})}
-                />
-                {(formData.reason || '').trim().length > 0 && (formData.reason || '').trim().split(/\s+/).filter(w => w.length > 0).length < 10 ? (
-                  <Text className="text-red-500 text-[11px] font-semibold mb-5 ml-2 tracking-wide uppercase">Minimum 10 words required</Text>
-                ) : (
-                  <View style={{ marginBottom: 20 }} />
-                )}
+                  <Text style={{ fontSize: 12 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-3">Please provide a Reason for the leave</Text>
+                  <TextInput 
+                    className="bg-white border rounded-xl px-4 py-4 font-semibold text-[#011023] mb-2"
+                    autoCapitalize="characters"
+                    multiline
+                    numberOfLines={3}
+                    style={{ 
+                      minHeight: 80, 
+                      textAlignVertical: 'top',
+                      borderColor: (formData.reason || '').trim().length > 0 && (formData.reason || '').trim().split(/\s+/).filter(w => w.length > 0).length < 10 ? '#f87171' : '#e2e8f0'
+                    }}
+                    value={formData.reason}
+                    onChangeText={(t) => setFormData({...formData, reason: t})}
+                  />
+                  {(formData.reason || '').trim().length > 0 && (formData.reason || '').trim().split(/\s+/).filter(w => w.length > 0).length < 10 ? (
+                    <Text className="text-red-500 text-[11px] font-semibold mb-5 ml-2 tracking-wide uppercase">Minimum 10 words required</Text>
+                  ) : (
+                    <View style={{ marginBottom: 20 }} />
+                  )}
 
-                <TouchableOpacity 
-                  disabled={isSubmitting}
-                  onPress={handleSubmit}
-                  className="bg-[#011023] rounded-2xl py-4 items-center uppercase justify-center flex-row mb-1 shadow-sm"
-                >
-                  <Text className="text-white font-bold uppercase tracking-widest text-[14px]">Submit Request</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity 
+                    disabled={isSubmitting}
+                    onPress={handleSubmit}
+                    className="bg-[#011023] rounded-2xl py-4 items-center uppercase justify-center flex-row mb-1 shadow-sm"
+                  >
+                    <Text className="text-white font-bold uppercase tracking-widest text-[14px]">Submit Request</Text>
+                  </TouchableOpacity>
 
-              </ScrollView>
-            </View>
-
-            {isExtendModalOpen && isStartDateModalOpen && (
-              <NativeDatePicker 
-                visible={isStartDateModalOpen}
-                onClose={() => setIsStartDateModalOpen(false)}
-                valueStr={formData.startDate}
-                minDateStr=""
-                title="SELECT START DATE"
-                onSelect={(date: string) => {
-                   setFormData(prev => {
-                     const updates: any = { startDate: date };
-                     if (prev.leaveTime === 'Half Day') {
-                       updates.endDate = date;
-                     } else if (prev.endDate) {
-                       const parse = (s: string) => {
-                         const p = s.split('-');
-                         return new Date(Number(p[2]), Number(p[1])-1, Number(p[0]));
-                       };
-                       if (parse(date) > parse(prev.endDate)) {
-                         updates.endDate = date;
-                       }
-                     }
-                     return { ...prev, ...updates };
-                   });
-                }}
-              />
-            )}
-            
-            {isExtendModalOpen && isEndDateModalOpen && (
-              <NativeDatePicker 
-                visible={isEndDateModalOpen}
-                onClose={() => setIsEndDateModalOpen(false)}
-                valueStr={formData.endDate || formData.startDate}
-                minDateStr={formData.startDate}
-                title="Select End Date"
-                onSelect={(date: string) => setFormData({...formData, endDate: date})}
-              />
-            )}
-          </View>
-        </KeyboardAvoidingView>
+                </ScrollView>
               </View>
-      )}
-</View>
+
+              {isExtendModalOpen && isStartDateModalOpen && (
+                <NativeDatePicker 
+                  visible={isStartDateModalOpen}
+                  onClose={() => setIsStartDateModalOpen(false)}
+                  valueStr={formData.startDate}
+                  minDateStr=""
+                  title="SELECT START DATE"
+                  onSelect={(date: string) => {
+                     setFormData(prev => {
+                       const updates: any = { startDate: date };
+                       if (prev.leaveTime === 'Half Day') {
+                         updates.endDate = date;
+                       } else if (prev.endDate) {
+                         const parse = (s: string) => {
+                           const p = s.split('-');
+                           return new Date(Number(p[2]), Number(p[1])-1, Number(p[0]));
+                         };
+                         if (parse(date) > parse(prev.endDate)) {
+                           updates.endDate = date;
+                         }
+                       }
+                       return { ...prev, ...updates };
+                     });
+                  }}
+                />
+              )}
+              
+              {isExtendModalOpen && isEndDateModalOpen && (
+                <NativeDatePicker 
+                  visible={isEndDateModalOpen}
+                  onClose={() => setIsEndDateModalOpen(false)}
+                  valueStr={formData.endDate || formData.startDate}
+                  minDateStr={formData.startDate}
+                  title="Select End Date"
+                  onSelect={(date: string) => setFormData({...formData, endDate: date})}
+                />
+              )}
+            </View>
+          </KeyboardAvoidingView>
         )}
       </Modal>
 
@@ -1118,25 +1116,25 @@ export default function LeaveScreen() {
             <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
             <TouchableOpacity activeOpacity={1} className="absolute inset-0" />
             <TouchableWithoutFeedback onPress={() => { if (isStatusDropdownOpen) setIsStatusDropdownOpen(false); }}>
-              <View className="bg-white rounded-[24px] shadow-2xl w-[340px]" style={{ backgroundColor: 'white', padding: 24, borderRadius: 24, width: 340, height: 220, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <View className="items-center relative justify-center flex-row">
-                  <Text className="text-[18px] font-bold text-[#011023] uppercase tracking-wide">Filter</Text>
+              <View className="bg-white rounded-[24px] shadow-2xl" style={{ backgroundColor: 'white', padding: 22, borderRadius: 24, width: '88%', maxWidth: 360, minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <View className="items-center relative justify-center flex-row mb-4">
+                  <Text className="text-[17px] font-bold text-[#011023] uppercase tracking-wide">Filter</Text>
                 </View>
 
-                <View className="flex-row items-center justify-center z-10 w-full">
-                  <View>
-                    <Text className="text-[14px] font-semibold text-slate-500 uppercase tracking-widest">Status in</Text>
+                <View className="flex-row items-center justify-between z-10 w-full mb-4">
+                  <View className="flex-1 mr-2">
+                    <Text className="text-[13.5px] font-semibold text-slate-500 uppercase tracking-wider">Status in</Text>
                   </View>
-                  <View className="relative" style={{ width: 130, marginLeft: 20 }}>
+                  <View className="relative" style={{ width: 140 }}>
                     <TouchableOpacity 
                       onPress={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                      style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', paddingHorizontal: 16, height: 30, borderRadius: 24, borderWidth: 1, borderColor: '#e2e8f0', width: 130 }}
+                      style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', paddingHorizontal: 12, height: 32, borderRadius: 20, borderWidth: 1, borderColor: '#e2e8f0', width: '100%' }}
                     >
                       <Text style={{ fontWeight: '500', textTransform: 'uppercase', fontSize: 13, color: '#011023', letterSpacing: 0.5 }}>{tempFilterStatus}</Text>
                     </TouchableOpacity>
 
                     {isStatusDropdownOpen && (
-                      <View className="bg-white border border-slate-200 rounded-xl mt-1 shadow-sm overflow-hidden absolute top-full left-0 z-50" style={{ width: 130, maxHeight: 180 }}>
+                      <View className="bg-white border border-slate-200 rounded-xl mt-1 shadow-sm overflow-hidden absolute top-full left-0 right-0 z-50" style={{ width: '100%', maxHeight: 180 }}>
                         <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
                           {['All', 'Pending', 'Approved', 'Rejected'].map((statusOption) => (
                             <TouchableOpacity
@@ -1146,9 +1144,9 @@ export default function LeaveScreen() {
                                 setIsStatusDropdownOpen(false);
                               }}
                               className={`flex-row items-center justify-center relative ${tempFilterStatus === statusOption ? 'bg-slate-50' : 'bg-white'}`}
-                              style={{ paddingVertical: 5 }}
+                              style={{ paddingVertical: 6 }}
                             >
-                              <Text className={`font-semibold uppercase text-[14px] tracking-wide text-center ${tempFilterStatus === statusOption ? 'text-[#011023]' : 'text-slate-500'}`}>
+                              <Text className={`font-semibold uppercase text-[13px] tracking-wide text-center ${tempFilterStatus === statusOption ? 'text-[#011023]' : 'text-slate-500'}`}>
                                 {statusOption}
                               </Text>
                             </TouchableOpacity>
@@ -1160,10 +1158,10 @@ export default function LeaveScreen() {
                 </View>
                 
                 {/* Action Buttons */}
-                <View className="flex-row border-t border-slate-100 justify-between items-center" style={{ paddingTop: 16, marginTop: 8, gap: 15 }}>
+                <View className="flex-row border-t border-slate-100 justify-between items-center" style={{ paddingTop: 16, marginTop: 8, gap: 12 }}>
                   <TouchableOpacity 
                     onPress={() => setIsFilterModalOpen(false)} 
-                    style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', borderColor: '#e2e8f0', borderWidth: 1.5, borderRadius: 12, paddingVertical: 9 }}
+                    style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', borderColor: '#e2e8f0', borderWidth: 1.5, borderRadius: 12, paddingVertical: 10 }}
                   >
                     <Text style={{ fontWeight: 'bold', color: '#3c4655ff', textTransform: 'uppercase', fontSize: 12, letterSpacing: 1 }}>Cancel</Text>
                   </TouchableOpacity>
@@ -1173,7 +1171,7 @@ export default function LeaveScreen() {
                       setFilterStatus(tempFilterStatus);
                       setIsFilterModalOpen(false);
                     }} 
-                    style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#151a20ff', borderRadius: 12, paddingVertical: 9 }}
+                    style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#151a20ff', borderRadius: 12, paddingVertical: 10 }}
                   >
                     <Text style={{ fontWeight: 'bold', color: '#ffffff', textTransform: 'uppercase', fontSize: 12, letterSpacing: 1 }}>Apply</Text>
                   </TouchableOpacity>

@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, ActivityIndicator, Platform, StatusBar } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, Platform, StatusBar } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { User, Clock, Calendar, ChevronRight, CheckCircle, AlertCircle, ClipboardList, FileText, ArrowRight, LogIn, LogOut } from 'lucide-react-native';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { DashboardSkeleton } from '../../components/Skeleton';
+
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
 const API_URL = `http://${localIp}:5001`;
+
 export default function HomeScreen() {
   const [user, setUser] = useState<any>(null);
   const [todayRecord, setTodayRecord] = useState<any>(null);
@@ -17,9 +20,11 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
   useEffect(() => {
     loadUser();
   }, []);
+
   useFocusEffect(
     useCallback(() => {
       if (user) {
@@ -28,6 +33,7 @@ export default function HomeScreen() {
       }
     }, [user])
   );
+
   const loadUser = async () => {
     try {
       const storedUserStr = await SecureStore.getItemAsync('employeeUser');
@@ -48,6 +54,7 @@ export default function HomeScreen() {
       setLoading(false);
     }
   };
+
   const fetchDashboardData = async (empId: string, silent = false) => {
     try {
       if (!silent) setLoading(true);
@@ -79,14 +86,23 @@ export default function HomeScreen() {
       setRefreshing(false);
     }
   };
+
   const onRefresh = useCallback(() => {
     if (user) {
       setRefreshing(true);
       fetchDashboardData(user.employeeId || user.id || user._id, true);
     }
   }, [user]);
+
   const handleCheckIn = async () => {
     if (!user) return;
+    if (todayRecord?.isNewJoiningBlocked) {
+      Alert.alert(
+        'Account in Process',
+        'Since you are a new employee your account is still in process, you can CHECKIN at the time of your respective shift. Thank you.'
+      );
+      return;
+    }
     const empId = user.employeeId || user.id || user._id;
     setActionLoading(true);
     try {
@@ -97,15 +113,18 @@ export default function HomeScreen() {
         fetchDashboardData(empId, true);
         Alert.alert('Success', 'Checked in successfully!');
       } else {
-        Alert.alert('Error', res.data.message || 'Check-in failed. Please try again.');
+        Alert.alert('Check-In', res.data.message || 'Check-in failed. Please try again.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Check-in error:", err);
-      Alert.alert('Error', 'Connection failed. Please try again.');
+      const serverMessage = err.response?.data?.message || err.message || 'Check-in failed. Please try again.';
+      Alert.alert('Check-In', serverMessage);
+      fetchDashboardData(empId, true);
     } finally {
       setActionLoading(false);
     }
   };
+
   const handleCheckOut = async () => {
     if (!todayRecord?._id || !user) return;
     const empId = user.employeeId || user.id || user._id;
@@ -116,21 +135,25 @@ export default function HomeScreen() {
         fetchDashboardData(empId, true);
         Alert.alert('Success', 'Checked out successfully!');
       } else {
-        Alert.alert('Error', res.data.message || 'Check-out failed. Please try again.');
+        Alert.alert('Check-Out', res.data.message || 'Check-out failed. Please try again.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Check-out error:", err);
-      Alert.alert('Error', 'Connection failed. Please try again.');
+      const serverMessage = err.response?.data?.message || err.message || 'Check-out failed. Please try again.';
+      Alert.alert('Check-Out', serverMessage);
+      fetchDashboardData(empId, true);
     } finally {
       setActionLoading(false);
     }
   };
+
   const getGreeting = () => {
     const hrs = new Date().getHours();
     if (hrs < 12) return 'Good Morning';
     if (hrs < 18) return 'Good Afternoon';
     return 'Good Evening';
   };
+
   const formatTime = (dateStr: string) => {
     if (!dateStr) return '--:--';
     try {
@@ -188,9 +211,13 @@ export default function HomeScreen() {
       default: return { backgroundColor: '#f1f5f9', borderColor: '#e2e8f0', textColor: '#1e293b' };
     }
   };
+
   // Helper variables for UI
-  const isCheckedIn = todayRecord && todayRecord.checkIn;
-  const isCheckedOut = todayRecord && todayRecord.checkOut;
+  const isCheckedIn = Boolean(todayRecord && todayRecord.checkIn);
+  const isCheckedOut = Boolean(todayRecord && todayRecord.checkOut);
+  const isMarkedAbsent = Boolean(todayRecord && todayRecord.status === 'Absent');
+  const isOnLeave = Boolean(todayRecord && todayRecord.status === 'On Leave');
+  const isNewJoiningBlocked = Boolean(todayRecord && todayRecord.isNewJoiningBlocked);
   const activeTasks = tasks.filter(t => t.status !== 'Completed' && t.status !== 'Delivered');
   const pendingLeaves = leaves.filter(l => l.status === 'Pending');
 
@@ -210,25 +237,23 @@ export default function HomeScreen() {
     const taskDate = t.schedule?.date;
     return taskDate && todayDateStrings.includes(taskDate);
   });
+
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-slate-50">
-        <ActivityIndicator size="large" color="#011023" />
-      </View>
-    );
+    return <DashboardSkeleton />;
   }
+
   return (
     <ScrollView
       className="flex-1 bg-slate-50"
       showsVerticalScrollIndicator={false}
       bounces={false}
+      contentContainerStyle={{ paddingBottom: 30 }}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#011023']} />
       }
     >
       <View className="px-5">
 
-        {/* Stats Grid */}
         {/* Stats Grid - 2x2 Layout */}
         <View style={{ gap: 12, marginTop: 15, marginBottom: 12 }}>
           {/* Row 1 */}
@@ -289,14 +314,15 @@ export default function HomeScreen() {
             >
               <View className="flex-1 pr-2">
                 <Text style={{ fontSize: 18, marginBottom: 6 }} className="font-semibold text-[#011023]">{pendingLeaves.length}</Text>
-                <Text className="text-slate-400 font-bold uppercase text-[14px]" numberOfLines={1}>Leave Left</Text>
+                <Text className="text-slate-400 font-bold uppercase text-[14px]" numberOfLines={1}>Pending Leaves</Text>
               </View>
-              <View className="w-10 h-10 rounded-xl bg-rose-50 justify-center items-center">
-                <FileText size={20} color="#e11d48" strokeWidth={2.5} />
+              <View className="w-10 h-10 rounded-xl bg-amber-50 justify-center items-center">
+                <Clock size={20} color="#d97706" strokeWidth={2.5} />
               </View>
             </TouchableOpacity>
 
-            <View
+            <TouchableOpacity
+              onPress={() => router.push('/tabs/attendance')}
               className="flex-1 bg-white rounded-2xl border border-slate-200 p-4 flex-row items-center justify-between"
               style={{
                 elevation: 2,
@@ -308,225 +334,181 @@ export default function HomeScreen() {
             >
               <View className="flex-1 pr-2">
                 <Text style={{ fontSize: 18, marginBottom: 6 }} className="font-semibold text-[#011023]">{attendanceRate}%</Text>
-                <Text className="text-slate-400 font-bold uppercase text-[14px]" numberOfLines={1}>Attend. Rate</Text>
+                <Text className="text-slate-400 font-bold uppercase text-[14px]" numberOfLines={1}>Attendance</Text>
               </View>
               <View className="w-10 h-10 rounded-xl bg-emerald-50 justify-center items-center">
                 <CheckCircle size={20} color="#059669" strokeWidth={2.5} />
               </View>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Shift Card */}
+        {/* Section Header: Active Shift / Actions */}
+        <View className="mt-2 mb-3">
+          <Text style={{ fontSize: 15 }} className="text-slate-400 font-semibold uppercase tracking-widest ml-1">Today's Shift</Text>
+        </View>
+
+        {/* Today's Shift & Attendance Card */}
         <View
-          className="bg-white rounded-2xl border border-slate-200"
+          className="bg-white rounded-2xl border border-slate-200 p-5 mb-4"
           style={{
             elevation: 3,
-            paddingVertical: 13,
-            paddingHorizontal: 15,
-            marginBottom: 12,
             shadowColor: '#64748b',
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.08,
-            shadowRadius: 8
+            shadowRadius: 10
           }}
         >
-          <View style={{ marginBottom: 10 }} className="flex-row justify-between items-center">
-            <Text className="font-bold text-slate-800 uppercase tracking-wider text-[14px]">Shift Status</Text>
-            {isCheckedOut ? (
+          <View className="flex-row justify-between items-center mb-4 pb-3 border-b border-slate-100">
+            <View>
+              <Text className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Date</Text>
+              <Text style={{ fontSize: 15 }} className="font-bold text-[#011023] mt-0.5 uppercase">
+                {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+              </Text>
+            </View>
+            <View className="items-end">
+              <Text className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Status</Text>
               <View
-                className="border rounded-full items-center justify-center"
+                className="px-3 py-1 rounded-full mt-1 border"
                 style={{
-                  backgroundColor: '#ccfbf1',
-                  borderColor: '#99f6e4',
-                  paddingHorizontal: 8,
-                  paddingVertical: 1.5,
-                  borderWidth: 1
+                  backgroundColor: isCheckedOut ? '#ccfbf1' : isCheckedIn ? '#dcfce7' : isMarkedAbsent ? '#ffe4e6' : isOnLeave ? '#dbeafe' : isNewJoiningBlocked ? '#f1f5f9' : '#fef3c7',
+                  borderColor: isCheckedOut ? '#99f6e4' : isCheckedIn ? '#bbf7d0' : isMarkedAbsent ? '#fecdd3' : isOnLeave ? '#bfdbfe' : isNewJoiningBlocked ? '#e2e8f0' : '#fde68a'
                 }}
               >
                 <Text
-                  className="font-semibold uppercase text-[9px]"
-                  style={{ color: '#115e59', fontSize: 10.5 }}
+                  className="text-xs font-bold uppercase tracking-wider"
+                  style={{ color: isCheckedOut ? '#115e59' : isCheckedIn ? '#166534' : isMarkedAbsent ? '#be123c' : isOnLeave ? '#1d4ed8' : isNewJoiningBlocked ? '#475569' : '#92400e' }}
                 >
-                  Shift Completed
+                  {isCheckedOut ? 'Completed' : isCheckedIn ? (todayRecord?.status === 'Late' ? 'Late' : 'Active Shift') : isMarkedAbsent ? 'Absent' : isOnLeave ? 'On Leave' : isNewJoiningBlocked ? 'New Joining' : 'Not Checked In'}
                 </Text>
               </View>
-            ) : isCheckedIn ? (
-              <View
-                className="border rounded-full items-center justify-center"
-                style={{
-                  backgroundColor: '#dcfce7',
-                  borderColor: '#bbf7d0',
-                  paddingHorizontal: 8,
-                  paddingVertical: 1.5,
-                  borderWidth: 1
-                }}
-              >
-                <Text
-                  className="font-semibold uppercase text-[9px]"
-                  style={{ color: '#166534', fontSize: 10.5}}
-                >
-                  On Duty
-                </Text>
-              </View>
-            ) : (
-              <View
-                className="border rounded-full items-center justify-center"
-                style={{
-                  backgroundColor: '#ffe4e6',
-                  borderColor: '#fecdd3',
-                  paddingHorizontal: 8,
-                  paddingVertical: 1.5,
-                  borderWidth: 1
-                }}
-              >
-                <Text
-                  className="font-semibold uppercase text-[9px]"
-                  style={{ color: '#be123c', fontSize: 10.5 }}
-                >
-                  Off Duty
-                </Text>
-              </View>
-            )}
+            </View>
           </View>
 
-          <View className="flex-row justify-between items-center">
-            <View className="flex-1 items-start justify-center">
-              <Text className="text-[12px] text-slate-500 font-semibold uppercase tracking-widest mb-1">Check In</Text>
-              <Text className="text-[13px] font-semibold text-[#011023] uppercase truncate" numberOfLines={1}>
-                {formatDateTime(todayRecord?.checkIn)}
+          {/* Time Check-in / Check-out Details */}
+          <View className="flex-row justify-between items-center mb-5">
+            <View className="flex-1">
+              <Text className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Check In</Text>
+              <Text style={{ fontSize: 16 }} className="font-bold text-[#011023]">
+                {isCheckedIn ? formatTime(todayRecord.checkIn) : '--:--'}
               </Text>
             </View>
-            <View className="flex-1 items-end justify-center">
-              <Text className="text-[12px] text-slate-500 font-semibold uppercase tracking-widest mb-1 text-right">Check Out</Text>
-              <Text className="text-[13px] font-semibold text-[#011023] uppercase truncate text-right" numberOfLines={1}>
-                {formatDateTime(todayRecord?.checkOut)}
+            <View className="h-8 w-[1px] bg-slate-200" />
+            <View className="flex-1 items-end">
+              <Text className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Check Out</Text>
+              <Text style={{ fontSize: 16 }} className="font-bold text-[#011023]">
+                {isCheckedOut ? formatTime(todayRecord.checkOut) : '--:--'}
               </Text>
             </View>
           </View>
+
+          {/* Punch Button */}
+          {/* {isCheckedOut ? (
+            <View className="bg-slate-100 py-3.5 rounded-xl items-center">
+              <Text className="font-bold text-slate-500 uppercase tracking-widest text-xs">Shift Finished for Today</Text>
+            </View>
+          ) : isMarkedAbsent ? (
+            <View className="bg-red-50 border border-red-100 py-3.5 rounded-xl items-center flex-row justify-center">
+              <AlertCircle size={18} color="#ef4444" strokeWidth={2.5} />
+              <Text className="font-bold text-red-600 uppercase tracking-wider text-xs ml-2">Marked Absent for Today</Text>
+            </View>
+          ) : isOnLeave ? (
+            <View className="bg-blue-50 border border-blue-100 py-3.5 rounded-xl items-center flex-row justify-center">
+              <Calendar size={18} color="#2563eb" strokeWidth={2.5} />
+              <Text className="font-bold text-blue-600 uppercase tracking-wider text-xs ml-2">On Approved Leave</Text>
+            </View>
+          ) : isNewJoiningBlocked ? (
+            <View className="bg-slate-100 py-3.5 rounded-xl items-center">
+              <Text className="font-bold text-slate-500 uppercase tracking-widest text-xs">Account in Process</Text>
+            </View>
+          ) : isCheckedIn ? (
+            <TouchableOpacity
+              onPress={handleCheckOut}
+              disabled={actionLoading}
+              className="bg-red-500 py-3.5 rounded-xl flex-row justify-center items-center shadow-sm"
+              style={{ opacity: actionLoading ? 0.7 : 1 }}
+            >
+              <LogOut size={18} color="#ffffff" strokeWidth={2.5} />
+              <Text className="text-white font-bold uppercase tracking-wider text-sm ml-2">
+                {actionLoading ? 'Checking Out...' : 'Check Out Now'}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={handleCheckIn}
+              disabled={actionLoading}
+              className="bg-[#1d9871ff] py-3.5 rounded-xl flex-row justify-center items-center shadow-sm"
+              style={{ opacity: actionLoading ? 0.7 : 1 }}
+            >
+              <LogIn size={18} color="#ffffff" strokeWidth={2.5} />
+              <Text className="text-white font-bold uppercase tracking-wider text-sm ml-2">
+                {actionLoading ? 'Checking In...' : 'Check In Now'}
+              </Text>
+            </TouchableOpacity>
+          )} */}
         </View>
 
-        {/* Active Tasks Section */}
-        <View style={{ marginBottom: 3 }} >
-          <View style={{ marginHorizontal: 0.5 }} className="flex-row justify-between items-center mb-3">
-            <Text className="font-bold text-slate-800 uppercase tracking-widest text-[12px] ml-1">Pending Tasks</Text>
-            <TouchableOpacity onPress={() => router.push('/tabs/task')} className="flex-row items-center">
-              <Text className="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1">View All</Text>
-              <ChevronRight size={13} color="#94a3b8" strokeWidth={2.5} />
-            </TouchableOpacity>
-          </View>
+        {/* Section Header: Today's Tasks */}
+        <View className="flex-row justify-between items-center mb-3 mt-2">
+          <Text style={{ fontSize: 15 }} className="text-slate-400 font-semibold uppercase tracking-widest ml-1">Today's Assigned Tasks</Text>
+          <TouchableOpacity onPress={() => router.push('/tabs/task')}>
+            <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider">View All</Text>
+          </TouchableOpacity>
+        </View>
 
-          {activeTasks.length === 0 ? (
-            <View className="bg-white border border-slate-200 rounded-2xl p-6 mb-3 items-center justify-center">
-              <CheckCircle size={26} color="#94a3b8" strokeWidth={2} />
-              <Text className="text-slate-400 font-bold uppercase text-[11px] tracking-wider mt-2.5">No Active Tasks Assigned</Text>
-            </View>
-          ) : (
-            activeTasks.slice(0, 2).map((task) => (
+        {/* Today's Task List */}
+        {todayTasks.length === 0 ? (
+          <View className="bg-white rounded-2xl border border-slate-200 p-6 items-center justify-center mb-4">
+            <ClipboardList size={32} color="#94a3b8" strokeWidth={1.5} />
+            <Text className="text-slate-400 font-bold uppercase tracking-wider text-xs mt-2">No tasks assigned for today</Text>
+          </View>
+        ) : (
+          todayTasks.slice(0, 3).map((task) => {
+            const taskStyle = getTaskStatusStyle(task.status);
+            return (
               <TouchableOpacity
                 key={task._id}
-                onPress={() => router.push('/tabs/task')}
-                className="bg-white border border-slate-200 rounded-2xl mb-3"
+                onPress={() => router.push({ pathname: '/screens/details', params: { bookingId: task.bookingId } })}
+                className="bg-white rounded-2xl border border-slate-200 p-4 mb-3"
                 style={{
                   elevation: 2,
-                  paddingHorizontal: 15,
-                  paddingVertical: 10,
                   shadowColor: '#64748b',
                   shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.04,
+                  shadowOpacity: 0.05,
                   shadowRadius: 5
                 }}
               >
-                <View className="flex-row justify-between items-center mb-2.5">
-                  <Text className="font-bold text-slate-800 text-[15px] uppercase" numberOfLines={1}>{task.bookingId || 'Vehicle Service'}</Text>
+                <View className="flex-row justify-between items-start mb-2">
+                  <View className="flex-1 pr-2">
+                    <Text style={{ fontSize: 15 }} className="font-bold text-[#011023] uppercase" numberOfLines={1}>
+                      {task.service?.title || 'Vehicle Service'}
+                    </Text>
+                    <Text className="text-xs font-semibold text-slate-400 mt-0.5 uppercase">
+                      {task.vehicle?.model ? `${task.vehicle?.make || ''} ${task.vehicle?.model}` : 'Vehicle Care'}
+                    </Text>
+                  </View>
                   <View
-                    className="border rounded-full items-center justify-center"
-                    style={{
-                      backgroundColor: getTaskStatusStyle(task.status).backgroundColor,
-                      borderColor: getTaskStatusStyle(task.status).borderColor,
-                      paddingHorizontal: 8,
-                      paddingVertical: 1.5,
-                      borderWidth: 1
-                    }}
+                    className="px-2.5 py-1 rounded-full border"
+                    style={{ backgroundColor: taskStyle.backgroundColor, borderColor: taskStyle.borderColor }}
                   >
-                    <Text
-                      className="font-bold uppercase text-[9px]"
-                      style={{ color: getTaskStatusStyle(task.status).textColor, fontSize: 10.5, marginTop: -1.5 }}
-                    >
+                    <Text className="text-[10px] font-bold uppercase tracking-wider" style={{ color: taskStyle.textColor }}>
                       {task.status}
                     </Text>
                   </View>
                 </View>
-                <Text className="text-slate-700 font-semibold text-[12px] uppercase mb-1" numberOfLines={1}>
-                  Service: {task.service?.title || 'General Repair'}
-                </Text>
-                <View className="flex-row items-center gap-1">
-                  {/* <Clock size={11} color="#94a3b8" /> */}
-                  <Text className="text-slate-500 font-semibold uppercase text-[10px]">
-                    Booked at: {task.schedule?.date || formatLocalDate(task.createdAt || task.date)} | {task.schedule?.time || new Date(task.createdAt || task.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+
+                <View className="pt-2 mt-1 border-t border-slate-100 flex-row justify-between items-center">
+                  <Text className="text-[11px] font-semibold text-slate-500 uppercase">
+                    ID: {task.bookingId || task._id?.substring(0, 8)}
+                  </Text>
+                  <Text className="text-[11px] font-bold text-slate-700 uppercase">
+                    {task.schedule?.timeSlot || 'Scheduled'}
                   </Text>
                 </View>
               </TouchableOpacity>
-            ))
-          )}
-        </View>
-
-        {/* Leave Status Section */}
-        <View className="">
-          <View style={{ marginHorizontal: 0.5 }} className="flex-row justify-between items-center">
-            <Text className="font-bold text-slate-800 uppercase tracking-widest text-[12px] ml-1">Recent Leaves</Text>
-            <TouchableOpacity onPress={() => router.push('/tabs/leave')} className="flex-row items-center">
-              <Text className="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1">View All</Text>
-              <ChevronRight size={13} color="#94a3b8" strokeWidth={2.5} />
-            </TouchableOpacity>
-          </View>
-
-          {leaves.length === 0 ? (
-            <View className="bg-white border border-slate-200 rounded-2xl p-6 mt-3 items-center justify-center">
-              <FileText size={26} color="#94a3b8" strokeWidth={2} />
-              <Text className="text-slate-400 font-bold uppercase text-[11px] tracking-wider mt-2.5">No Leave History Available</Text>
-            </View>
-          ) : (
-            leaves.slice(0, 2).map((leave) => (
-              <TouchableOpacity
-                key={leave._id}
-                onPress={() => router.push('/tabs/leave')}
-                className="bg-white border border-slate-200 rounded-2xl p-4 mt-3 flex-row justify-between items-center"
-                style={{
-                  elevation: 2,
-                  shadowColor: '#64748b',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.04,
-                  shadowRadius: 5
-                }}
-              >
-                <View className="flex-1 pr-3">
-                  <Text className="font-semibold text-slate-800 text-[13.5px] uppercase" numberOfLines={1}>{leave.reason || 'Personal Leave'}</Text>
-                  <Text className="text-slate-500 font-semibold uppercase text-[10px] mt-1 tracking-wide">
-                    From: {leave.startDate} to {leave.endDate}
-                  </Text>
-                </View>
-                <View
-                  className="border rounded-full"
-                  style={{
-                    backgroundColor: getLeaveStatusStyle(leave.status).backgroundColor,
-                    borderColor: getLeaveStatusStyle(leave.status).borderColor,
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                    borderWidth: 1
-                  }}
-                >
-                  <Text
-                    className="font-semibold uppercase"
-                    style={{ color: getLeaveStatusStyle(leave.status).textColor, fontSize: 10.5 }}
-                  >
-                    {leave.status}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))
-          )}
-        </View>
+            );
+          })
+        )}
 
       </View>
     </ScrollView>
