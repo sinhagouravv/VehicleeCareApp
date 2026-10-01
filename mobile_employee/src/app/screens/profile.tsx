@@ -9,13 +9,27 @@ import QRCode from 'react-native-qrcode-svg';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { ProfileSkeleton } from '../../components/Skeleton';
 
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
 const API_URL = `http://${localIp}:5001`;
 
+const formatDocNumber = (...vals: (string | undefined | null)[]): string => {
+  for (const val of vals) {
+    if (val && typeof val === 'string') {
+      const trimmed = val.trim();
+      if (trimmed && !trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.includes('cloudinary')) {
+        return trimmed;
+      }
+    }
+  }
+  return 'N/A';
+};
+
 export default function ProfileScreen() {
   const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [showQRModal, setShowQRModal] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [garageAddress, setGarageAddress] = useState<string>('');
@@ -24,6 +38,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     loadUser();
   }, []);
+
 
   const pickAndUploadImage = async () => {
     try {
@@ -133,20 +148,27 @@ export default function ProfileScreen() {
       }
     } catch (e) {
       console.log('Error loading user', e);
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading && !user) {
+    return <ProfileSkeleton />;
+  }
+
   return (
     <View className="flex-1 bg-slate-50">
+
       {/* Header with White Safe Area */}
       <SafeAreaView edges={['top']} style={{ backgroundColor: '#ffffff', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, zIndex: 50 }}>
         <View style={{
             backgroundColor: '#ffffff',
             borderBottomWidth: 1,
             borderBottomColor: '#f1f5f9',
-            height: Platform.OS === 'ios' ? 50 : 35,
-            paddingBottom: Platform.OS === 'ios' ? 10 : 5,
-            paddingHorizontal: 15.6,
+            minHeight: 48,
+            paddingVertical: 8,
+            paddingHorizontal: 19,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -311,25 +333,25 @@ export default function ProfileScreen() {
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">PAN CARD</Text>
                     <Text className="text-[#011023] font-semibold uppercase text-right">
-                      {user?.panCard ? (user.panCard.startsWith('http') ? 'Uploaded' : user.panCard) : 'N/A'}
+                      {formatDocNumber(user?.panCardNumber, user?.panNumber, user?.panCard)}
                     </Text>
                   </View>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">Aadhar Card</Text>
                     <Text className="text-[#011023] font-semibold uppercase text-right">
-                      {user?.adharCard ? (user.adharCard.startsWith('http') ? 'Uploaded' : user.adharCard) : 'N/A'}
+                      {formatDocNumber(user?.adharCardNumber, user?.adharNumber, user?.aadhaarCard, user?.adharCard)}
                     </Text>
                   </View>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">Voter Id Card</Text>
                     <Text className="text-[#011023] font-semibold uppercase text-right">
-                      {user?.voterId ? (user.voterId.startsWith('http') ? 'Uploaded' : user.voterId) : 'N/A'}
+                      {formatDocNumber(user?.voterIdNumber, user?.voterNumber, user?.voterId)}
                     </Text>
                   </View>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">Driving License</Text>
                     <Text className="text-[#011023] font-semibold uppercase text-right">
-                      {user?.drivingLicense ? (user.drivingLicense.startsWith('http') ? 'Uploaded' : user.drivingLicense) : 'N/A'}
+                      {formatDocNumber(user?.drivingLicenseNumber, user?.drivingLicense, user?.licenseNumber, user?.dlNumber)}
                     </Text>
                   </View>
               </View>
@@ -380,25 +402,25 @@ export default function ProfileScreen() {
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">PAN CARD</Text>
                     <Text className="text-[#011023] font-semibold uppercase text-right">
-                      {user?.panCard ? (user.panCard.startsWith('http') ? 'Uploaded' : user.panCard) : 'N/A'}
+                      {formatDocNumber(user?.panCardNumber, user?.panNumber, user?.panCard)}
                     </Text>
                   </View>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">Aadhar Card</Text>
                     <Text className="text-[#011023] font-semibold uppercase text-right">
-                      {user?.adharCard ? (user.adharCard.startsWith('http') ? 'Uploaded' : user.adharCard) : 'N/A'}
+                      {formatDocNumber(user?.adharCardNumber, user?.adharNumber, user?.aadhaarCard, user?.adharCard)}
                     </Text>
                   </View>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">Voter Id Card</Text>
                     <Text className="text-[#011023] font-semibold uppercase text-right">
-                      {user?.voterId ? (user.voterId.startsWith('http') ? 'Uploaded' : user.voterId) : 'N/A'}
+                      {formatDocNumber(user?.voterIdNumber, user?.voterNumber, user?.voterId)}
                     </Text>
                   </View>
                   <View className="flex-row items-center justify-between">
                     <Text className="text-slate-700 uppercase font-semibold pr-1">Driving License</Text>
                     <Text className="text-[#011023] font-semibold uppercase text-right">
-                      {user?.drivingLicense ? (user.drivingLicense.startsWith('http') ? 'Uploaded' : user.drivingLicense) : 'N/A'}
+                      {formatDocNumber(user?.drivingLicenseNumber, user?.drivingLicense, user?.licenseNumber, user?.dlNumber)}
                     </Text>
                   </View>
               </View>

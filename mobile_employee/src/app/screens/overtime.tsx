@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { OvertimeSkeleton } from '../../components/Skeleton';
 
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
@@ -213,7 +214,7 @@ export default function OvertimeScreen() {
     setRefreshing(false);
   };
 
-  const getRecordBadgeInfo = (status: string) => {
+  const _getRecordBadgeInfo = (status: string) => {
     return {
       label: 'Overtime',
       backgroundColor: '#e0e7ff',
@@ -307,7 +308,7 @@ export default function OvertimeScreen() {
     return durationMs / (1000 * 60);
   };
 
-  const formatRecordDuration = (record: any) => {
+  const _formatRecordDuration = (record: any) => {
     const totalMins = getRecordDurationMins(record);
     const hrs = Math.floor(totalMins / 60);
     const mins = Math.floor(totalMins % 60);
@@ -315,7 +316,7 @@ export default function OvertimeScreen() {
     return `${hrs}.${formattedMins} ${hrs !== 1 ? 'hrs' : 'hr'}`;
   };
 
-  const overtimeRecords = [...records]
+  const _overtimeRecords = [...records]
     .filter((r: any) => r.status === 'Overtime')
     .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -327,7 +328,8 @@ export default function OvertimeScreen() {
             backgroundColor: '#ffffff',
             borderBottomWidth: 1,
             borderBottomColor: '#f1f5f9',
-            height: 50,
+            minHeight: 48,
+            paddingVertical: 8,
             paddingHorizontal: 19,
             flexDirection: 'row',
             alignItems: 'center',
@@ -358,13 +360,12 @@ export default function OvertimeScreen() {
       </SafeAreaView>
 
       {/* Main Content */}
-      <View className="flex-1 px-5 pt-4">
-        {loading ? (
-          <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color="#011023" />
-          </View>
-        ) : (
+      {loading ? (
+        <OvertimeSkeleton />
+      ) : (
+        <View className="flex-1 px-5 pt-4">
           <View className="flex-1">
+
             {/* Apply Overtime Button */}
             <TouchableOpacity
               onPress={() => {
@@ -574,90 +575,8 @@ export default function OvertimeScreen() {
 
             <View className="flex-1">
               {/* Requested Overtime Section */}
-              <Text style={{ fontSize: 12.75, marginBottom: 11, marginLeft: 1.5 }} className="text-slate-400 font-semibold uppercase">Requested overtime Details for your attendance </Text>
+              <Text style={{ fontSize: 12.75, marginBottom: 11, marginLeft: 1.5 }} className="text-slate-400 font-semibold uppercase">Requested overtime Details for your attendance</Text>
               
-              {overtimeRequests.length === 0 ? (
-                <View style={{padding: 19 }} className="bg-white rounded-3xl border border-slate-200 items-center shadow-xs mb-3">
-                  <Text className="text-[#011023] font-semibold text-base uppercase tracking-wide text-center mb-1">
-                    No Requests
-                  </Text>
-                  <Text className="text-slate-400 font-semibold text-[11.5px] uppercase tracking-wider text-center">
-                    You have no requested overtime records.
-                  </Text>
-                </View>
-              ) : (
-                <View style={{ marginBottom: 10 }}>
-                  <ScrollView style={{ maxHeight: 260 }} nestedScrollEnabled={true} showsVerticalScrollIndicator={false} bounces={false} overScrollMode="never">
-                    <View style={{ gap: 10 }}>
-                      {overtimeRequests.map((req: any) => {
-                        const badgeInfo = getRequestBadgeInfo(req.status);
-                        return (
-                          <View
-                            key={req.id || req._id || req.date}
-                            className="bg-white rounded-2xl border border-slate-200"
-                            style={{
-                              elevation: 2,
-                              shadowColor: '#64748b',
-                              shadowOffset: { width: 0, height: 2 },
-                              shadowOpacity: 0.06,
-                              paddingVertical: 10,
-                              paddingHorizontal: 15,
-                              shadowRadius: 6,
-                            }}
-                          >
-                            {/* Top Row: Date & Status Badge */}
-                            <View className="flex-row items-center justify-between" style={{ marginBottom: 5 }}>
-                              <View className="flex-row items-center">
-                                <Text style={{ fontSize: 15 }} className="font-semibold text-[#011023] uppercase">
-                                  {formatDateString(req.date)}
-                                </Text>
-                                <Text style={{ fontSize: 15, marginHorizontal: 6, transform: [{ translateY: -1 }] }} className="font-semibold text-[#011023]">
-                                  |
-                                </Text>
-                                <Text style={{ fontSize: 15 }} className="font-semibold text-[#011023] uppercase">
-                                  {req.hours} {req.hours === 1 ? 'hr' : 'hrs'}
-                                </Text>
-                              </View>
-                              <View style={{ borderWidth: 1, paddingHorizontal: 10, paddingVertical: 2.5, backgroundColor: badgeInfo.backgroundColor, borderColor: badgeInfo.borderColor }} className="rounded-full">
-                                <Text style={{ color: badgeInfo.textColor }} className="text-[11px] font-semibold uppercase">
-                                  {badgeInfo.label}
-                                </Text>
-                              </View>
-                            </View>
-
-                            {/* Bottom Row: Reason and Remarks */}
-                            <View>
-                              {req.status === 'Pending' ? (
-                                <>
-                                  <Text className="text-slate-400 font-semibold text-[11px] tracking-wider uppercase">
-                                    Reason 
-                                  </Text>
-                                  <Text style={{ fontSize: 13 }} className="text-[#011023] uppercase font-medium mt-1" numberOfLines={1}>
-                                    {req.reason}
-                                  </Text>
-                                </>
-                              ) : (req.status === 'Approved' || req.status === 'Rejected') && req.remarks ? (
-                                <>
-                                  <Text className="text-slate-400 font-semibold text-[11px] tracking-wider uppercase">
-                                    Manager Remarks
-                                  </Text>
-                                  <Text style={{ fontSize: 13 }} className="text-[#011023] uppercase font-medium mt-1" numberOfLines={1}>
-                                    {req.remarks}
-                                  </Text>
-                                </>
-                              ) : null}
-                            </View>
-                          </View>
-                        );
-                      })}
-                    </View>
-                  </ScrollView>
-                </View>
-              )}
-
-              {/* Approved Overtime Section */}
-              <Text style={{ fontSize: 13, marginBottom: 10, marginLeft: 1.5 }} className="text-slate-400 font-semibold uppercase">Approved overtime Details for your attendance</Text>
-
               <ScrollView 
                 bounces={false} 
                 showsVerticalScrollIndicator={false}
@@ -665,28 +584,24 @@ export default function OvertimeScreen() {
                   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#011023"]} tintColor="#011023" />
                 }
                 contentContainerStyle={{ paddingBottom: 25 }}
-                style={{ marginBottom: 12 }}
                 className="flex-1"
               >
-                {overtimeRecords.length === 0 ? (
-                  <View className="bg-white rounded-3xl border border-slate-200 p-8 items-center shadow-sm">
-                    <View className="bg-slate-100 p-4 rounded-full mb-3">
-                      <Clock size={32} color="#011023" />
-                    </View>
-                    <Text className="text-[#011023] font-bold text-base uppercase tracking-wide text-center mb-1">
-                      No Overtime Logged
+                {overtimeRequests.length === 0 ? (
+                  <View style={{ padding: 19 }} className="bg-white rounded-3xl border border-slate-200 items-center shadow-xs">
+                    <Text className="text-[#011023] font-semibold text-base uppercase tracking-wide text-center mb-1">
+                      No Requests
                     </Text>
-                    <Text className="text-slate-400 font-semibold text-xs uppercase tracking-wider text-center">
-                      You have not logged any overtime shifts yet.
+                    <Text className="text-slate-400 font-semibold text-[11.5px] uppercase tracking-wider text-center">
+                      You have no requested overtime records.
                     </Text>
                   </View>
                 ) : (
                   <View style={{ gap: 10 }}>
-                    {overtimeRecords.map((record: any) => {
-                      const badgeInfo = getRecordBadgeInfo(record.status);
+                    {overtimeRequests.map((req: any) => {
+                      const badgeInfo = getRequestBadgeInfo(req.status);
                       return (
                         <View
-                          key={record.id || record._id || record.date}
+                          key={req.id || req._id || req.date}
                           className="bg-white rounded-2xl border border-slate-200"
                           style={{
                             elevation: 2,
@@ -699,21 +614,17 @@ export default function OvertimeScreen() {
                           }}
                         >
                           {/* Top Row: Date & Status Badge */}
-                          <View className="flex-row items-center justify-between" style={{ marginBottom: 6 }}>
+                          <View className="flex-row items-center justify-between" style={{ marginBottom: 5 }}>
                             <View className="flex-row items-center">
                               <Text style={{ fontSize: 15 }} className="font-semibold text-[#011023] uppercase">
-                                {formatDateString(record.date)}
+                                {formatDateString(req.date)}
                               </Text>
-                              {record.checkOut ? (
-                                <>
-                                  <Text style={{ fontSize: 15, marginHorizontal: 6, transform: [{ translateY: -1 }] }} className="font-semibold text-[#011023]">
-                                    |
-                                  </Text>
-                                  <Text style={{ fontSize: 15 }} className="font-semibold text-[#011023] uppercase">
-                                    {formatRecordDuration(record)}
-                                  </Text>
-                                </>
-                              ) : null}
+                              <Text style={{ fontSize: 15, marginHorizontal: 6, transform: [{ translateY: -1 }] }} className="font-semibold text-[#011023]">
+                                |
+                              </Text>
+                              <Text style={{ fontSize: 15 }} className="font-semibold text-[#011023] uppercase">
+                                {req.hours} {req.hours === 1 ? 'hr' : 'hrs'}
+                              </Text>
                             </View>
                             <View style={{ borderWidth: 1, paddingHorizontal: 10, paddingVertical: 2.5, backgroundColor: badgeInfo.backgroundColor, borderColor: badgeInfo.borderColor }} className="rounded-full">
                               <Text style={{ color: badgeInfo.textColor }} className="text-[11px] font-semibold uppercase">
@@ -722,27 +633,27 @@ export default function OvertimeScreen() {
                             </View>
                           </View>
 
-                          {/* Bottom Row: Check-in / Check-out Times */}
-                          <View className="flex-row items-center justify-between">
-                            {/* Left: Check-in */}
-                            <View className="flex-1">
-                              <Text className="text-slate-400 font-semibold text-[10px] tracking-wider uppercase">
-                                Check In
-                              </Text>
-                              <Text style={{ fontSize: 14 }} className="text-[#011023] font-semibold mt-1">
-                                {formatTimeString(record.checkIn)}
-                              </Text>
-                            </View>
-
-                            {/* Right: Check-out */}
-                            <View className="flex-1 items-end">
-                              <Text className="text-slate-400 font-semibold text-[10px] tracking-wider uppercase text-right">
-                                Check Out
-                              </Text>
-                              <Text style={{ fontSize: 14 }} className="text-[#011023] font-semibold mt-1 text-right">
-                                {formatTimeString(record.checkOut)}
-                              </Text>
-                            </View>
+                          {/* Bottom Row: Reason and Remarks */}
+                          <View>
+                            {req.status === 'Pending' ? (
+                              <>
+                                <Text className="text-slate-400 font-semibold text-[11px] tracking-wider uppercase">
+                                  Reason 
+                                </Text>
+                                <Text style={{ fontSize: 13 }} className="text-[#011023] uppercase font-medium mt-1" numberOfLines={1}>
+                                  {req.reason}
+                                </Text>
+                              </>
+                            ) : (req.status === 'Approved' || req.status === 'Rejected') && req.remarks ? (
+                              <>
+                                <Text className="text-slate-400 font-semibold text-[11px] tracking-wider uppercase">
+                                  Manager Remarks
+                                </Text>
+                                <Text style={{ fontSize: 13 }} className="text-[#011023] uppercase font-medium mt-1" numberOfLines={1}>
+                                  {req.remarks}
+                                </Text>
+                              </>
+                            ) : null}
                           </View>
                         </View>
                       );
@@ -752,8 +663,9 @@ export default function OvertimeScreen() {
               </ScrollView>
             </View>
           </View>
-        )}
-      </View>
+        </View>
+      )}
     </View>
   );
 }
+

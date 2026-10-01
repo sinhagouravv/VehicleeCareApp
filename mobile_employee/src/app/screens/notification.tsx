@@ -8,6 +8,7 @@ import { BlurView } from 'expo-blur';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
+import { NotificationSkeleton } from '../../components/Skeleton';
 
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
@@ -202,11 +203,9 @@ export default function NotificationScreen() {
 
       {/* Main Content */}
       {loading && notifications.length === 0 ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#011023" />
-          <Text className="text-slate-500 font-semibold mt-4 uppercase tracking-wider text-xs">Loading Notifications...</Text>
-        </View>
+        <NotificationSkeleton />
       ) : (
+
         <View className="flex-1">
           {/* Search Bar */}
           <View className="px-5 flex-row items-stretch" style={{ marginVertical: 14, marginHorizontal: 1.5 }}>
@@ -299,8 +298,8 @@ export default function NotificationScreen() {
                         </Text>
                       </Text>
                     </View>
-                    <View style={{ paddingHorizontal: 10, paddingVertical: 3, alignSelf: 'flex-start', ...(mapping.typeStyle || {}) }} className={`rounded-full ${mapping.typeColor || (mapping.typeStyle ? '' : 'bg-slate-100')}`}>
-                      <Text style={mapping.typeTextStyle || {}} className={`text-[10.5px] font-semibold uppercase tracking-widest ${mapping.typeTextColor || (mapping.typeTextStyle ? '' : 'text-slate-600')}`}>{mapping.type}</Text>
+                    <View style={{ paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start', ...(mapping.typeStyle || {}) }} className={`rounded-full ${mapping.typeColor || (mapping.typeStyle ? '' : 'bg-slate-100')}`}>
+                      <Text style={mapping.typeTextStyle || {}} className={`text-[10.5px] font-semibold uppercase ${mapping.typeTextColor || (mapping.typeTextStyle ? '' : 'text-slate-600')}`}>{mapping.type}</Text>
                     </View>
                   </View>
 

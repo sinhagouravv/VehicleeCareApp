@@ -8,6 +8,7 @@ import { BlurView } from 'expo-blur';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
+import { NotificationSkeleton } from '../../components/Skeleton';
 
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
@@ -192,11 +193,9 @@ export default function NotificationHistoryScreen() {
 
       {/* Main Content */}
       {loading && notifications.length === 0 ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#011023" />
-          <Text className="text-slate-500 font-semibold mt-4 uppercase tracking-wider text-xs">Loading History...</Text>
-        </View>
+        <NotificationSkeleton isHistory={true} />
       ) : (
+
         <View className="flex-1">
           {/* Search Bar */}
           <View className="px-5 flex-row items-stretch" style={{ marginVertical: 14, marginHorizontal: 1.5 }}>
