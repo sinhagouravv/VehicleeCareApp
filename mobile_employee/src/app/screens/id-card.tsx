@@ -10,6 +10,7 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import QRCode from 'react-native-qrcode-svg';
+import { IdCardSkeleton } from '../../components/Skeleton';
 
 
 const getTodayDateString = () => {
@@ -386,8 +387,13 @@ export default function IdCardScreen() {
     return `${day} ${monthNames[monthIndex]} ${year}`;
   };
 
+  if (loading) {
+    return <IdCardSkeleton />;
+  }
+
   return (
     <View className="flex-1 bg-[#f5f7f9]">
+
       {/* Header with White Safe Area */}
       <SafeAreaView edges={['top']} style={{ backgroundColor: '#ffffff', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, zIndex: 50 }}>
         <View style={{

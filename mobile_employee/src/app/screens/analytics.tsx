@@ -6,6 +6,7 @@ import { router, useFocusEffect } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { AnalyticsSkeleton } from '../../components/Skeleton';
 
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
@@ -267,12 +268,9 @@ export default function AnalyticsScreen() {
   const maxCategoryCount = categoryBreakdown.length > 0 ? Math.max(...categoryBreakdown.map(c => c.count)) : 1;
 
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-slate-50">
-        <ActivityIndicator size="large" color="#011023" />
-      </View>
-    );
+    return <AnalyticsSkeleton />;
   }
+
 
   return (
     <View className="flex-1 bg-slate-50">

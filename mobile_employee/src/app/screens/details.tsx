@@ -8,6 +8,7 @@ import Svg, { Circle } from 'react-native-svg';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { DetailsSkeleton } from '../../components/Skeleton';
 
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
@@ -1059,14 +1060,13 @@ export default function DetailsScreen() {
 
       {/* Main Content Area */}
       {loading ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#011023" />
-        </View>
+        <DetailsSkeleton />
       ) : (
         <View className="flex-1" style={{ zIndex: 10 }}>
           {renderContent()}
         </View>
       )}
+
     </View>
   );
 }
