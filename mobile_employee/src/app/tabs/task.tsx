@@ -1,17 +1,20 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, TouchableOpacity, FlatList, RefreshControl, Modal, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Eye, Check, Loader2, X, Calendar, Clock, User, Phone, Car, Tag, Search, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import OTPModal from '../../components/OTPModal';
+import { TaskSkeleton } from '../../components/Skeleton';
 
 const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
 const localIp = debuggerHost?.split(':')[0] || (Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1');
 const API_URL = `http://${localIp}:5001`;
 
 export default function TaskScreen() {
+  const insets = useSafeAreaInsets();
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -399,10 +402,9 @@ export default function TaskScreen() {
 
       {/* List */}
       {loading ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#011023" />
-        </View>
+        <TaskSkeleton />
       ) : (
+
         <FlatList
           style={{ flex: 1 }}
           data={filteredTasks}
@@ -430,9 +432,9 @@ export default function TaskScreen() {
           <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
           <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
           <TouchableOpacity activeOpacity={1} onPress={() => setIsViewModalOpen(false)} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
-          <View className="bg-white shadow-2xl overflow-hidden" style={{ maxHeight: '85%', width: '98%', borderRadius: 40, padding: 10 }}>
+          <View className="bg-white shadow-2xl overflow-hidden" style={{ maxHeight: '85%', width: '96%', maxWidth: 460, borderRadius: 32, padding: 14, paddingBottom: Math.max(insets.bottom + 10, 20) }}>
             {/* Modal Header */}
-            <View style={{ paddingTop: 15 }} className="px-5 flex-row justify-between items-center">
+            <View style={{ paddingTop: 12, paddingBottom: 8 }} className="px-3 flex-row justify-between items-center">
               <View>
                 <Text className="text-[18px] font-semibold text-[#011023] uppercase">Task Details</Text>
                 <Text style={{ marginTop: 2 }} className="text-sm text-slate-700 font-semibold tracking-wider">ID: {selectedTask?.bookingId}</Text>
@@ -442,10 +444,10 @@ export default function TaskScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView bounces={false} className="p-5" contentContainerStyle={{ paddingBottom: 0 }}>
+            <ScrollView bounces={false} className="p-3" contentContainerStyle={{ paddingBottom: 0 }}>
               {/* Customer */}
-              <Text style={{ fontSize: 15 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Customer Info</Text>
-              <View className="mb-3" style={{ paddingVertical: 10, gap: 5 }}>
+              <Text style={{ fontSize: 14 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Customer Info</Text>
+              <View className="mb-3" style={{ paddingVertical: 8, gap: 5 }}>
                 <View className="flex-row items-center justify-between">
                   <Text className="text-slate-700 uppercase font-semibold pr-1">Name</Text>
                   <Text className="text-[#011023] font-semibold uppercase text-right flex-shrink-1 pr-1">{selectedTask?.user?.name}</Text>
@@ -454,14 +456,10 @@ export default function TaskScreen() {
                   <Text className="text-slate-700 uppercase font-semibold pr-1">Phone</Text>
                   <Text className="text-[#011023] font-semibold text-right flex-shrink-1 pr-1">{selectedTask?.user?.phone}</Text>
                 </View>
-                {/* <View className="flex-row items-center justify-between">
-                  <Text className="text-slate-500 font-bold">Email</Text>
-                  <Text className="text-[#011023] font-semibold text-xs">{selectedTask?.user?.email}</Text>
-                </View> */}
               </View>
 
-              <Text style={{ fontSize: 15 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Customer Details</Text>
-              <View className="mb-3" style={{ paddingVertical: 10, gap: 5 }}>
+              <Text style={{ fontSize: 14 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Customer Details</Text>
+              <View className="mb-3" style={{ paddingVertical: 8, gap: 5 }}>
                 <View className="flex-row items-center justify-between">
                   <Text className="text-slate-700 uppercase font-semibold pr-1">Email</Text>
                   <Text className="text-[#011023] uppercase font-semibold text-right flex-shrink-1 pr-1">{selectedTask?.user?.email}</Text>
@@ -473,8 +471,8 @@ export default function TaskScreen() {
               </View>
 
               {/* Vehicle */}
-              <Text style={{ fontSize: 15 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Booking Details</Text>
-              <View className="mb-3" style={{ paddingVertical: 10, gap: 5 }}>
+              <Text style={{ fontSize: 14 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Booking Details</Text>
+              <View className="mb-3" style={{ paddingVertical: 8, gap: 5 }}>
                 <View className="flex-row items-center justify-between">
                   <Text className="text-slate-700 uppercase font-semibold pr-1">Year</Text>
                   <Text className="text-[#011023] font-semibold text-right flex-shrink-1 pr-1">{selectedTask?.vehicle?.year}</Text>
@@ -486,26 +484,26 @@ export default function TaskScreen() {
               </View>
 
               {/* Service */}
-              <Text style={{ fontSize: 15 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Service Details</Text>
-              <View className="mb-3" style={{ paddingVertical: 12 }}>
+              <Text style={{ fontSize: 14 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Service Details</Text>
+              <View className="mb-3" style={{ paddingVertical: 8 }}>
                 <Text className="font-semibold text-slate-700 text-semibold uppercase">{selectedTask?.service?.title}</Text>
                 <View className="flex-row items-center mt-2">
-                  <Text className="text-slate-6700 text-[13.5px] font-semibold uppercase">Schedule At: {selectedTask?.schedule?.date} | {selectedTask?.schedule?.time}</Text>
+                  <Text className="text-slate-700 text-[13.5px] font-semibold uppercase">Schedule At: {selectedTask?.schedule?.date} | {selectedTask?.schedule?.time}</Text>
                 </View>
               </View>
 
               {/* Status */}
-              <Text style={{ fontSize: 15 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Status Overview</Text>
-              <View className="mb-3" style={{ paddingVertical: 10, gap: 5 }}>
+              <Text style={{ fontSize: 14 }} className="font-semibold text-slate-500 uppercase tracking-widest mb-1">Status Overview</Text>
+              <View className="mb-3" style={{ paddingVertical: 8, gap: 5 }}>
                 <View className="flex-row items-center justify-between">
-                  <Text style={{fontSize:13.5}} className="text-slate-700 uppercase font-semibold">Current Status</Text>
-                  <View className=" rounded-full" style={{ ...getStatusStyle(selectedTask?.status), borderWidth: 1 }}>
-                    <Text className="font-semibold uppercase tracking-wider" style={{ color: getStatusTextColor(selectedTask?.status), paddingVertical:2, paddingHorizontal: 12, fontSize: 12.75 }}>{selectedTask?.status}</Text>
+                  <Text style={{ fontSize: 13.5 }} className="text-slate-700 uppercase font-semibold">Current Status</Text>
+                  <View className="rounded-full" style={{ ...getStatusStyle(selectedTask?.status), borderWidth: 1 }}>
+                    <Text className="font-semibold uppercase tracking-wider" style={{ color: getStatusTextColor(selectedTask?.status), paddingVertical: 2, paddingHorizontal: 12, fontSize: 12.75 }}>{selectedTask?.status}</Text>
                   </View>
                 </View>
-                <View className="flex-row items-center justify-between">
-                  <Text style={{fontSize:13.5}} className="text-slate-700 uppercase font-semibold">Duration Estimate</Text>
-                  <Text style={{fontSize:13.5}} className="text-[#011023] font-semibold uppercase">{selectedTask?.serviceDuration || 'Not Set'}</Text>
+                <View className="flex-row items-center justify-between mt-1">
+                  <Text style={{ fontSize: 13.5 }} className="text-slate-700 uppercase font-semibold">Duration Estimate</Text>
+                  <Text style={{ fontSize: 13.5 }} className="text-[#011023] font-semibold uppercase">{selectedTask?.serviceDuration || 'Not Set'}</Text>
                 </View>
               </View>
 
@@ -557,15 +555,15 @@ export default function TaskScreen() {
                 </>
               ) : (
                 <View className="mb-0">
-                  <Text style={{ fontSize: 15 }} className="font-semibold text-slate-500 uppercase tracking-widest">Assigned Technician</Text>
+                  <Text style={{ fontSize: 14 }} className="font-semibold text-slate-500 uppercase tracking-widest">Assigned Technician</Text>
                   <View style={{ paddingVertical: 8, gap: 2 }}>
                     <View className="flex-row items-center justify-between">
-                      <Text style={{fontSize:13.5}} className="text-slate-700 uppercase font-semibold">Name</Text>
-                      <Text style={{fontSize:13.5}} className="text-[#011023] font-semibold uppercase">{selectedTask?.assignedEmployees?.technician?.name || 'Not Assigned'}</Text>
+                      <Text style={{ fontSize: 13.5 }} className="text-slate-700 uppercase font-semibold">Name</Text>
+                      <Text style={{ fontSize: 13.5 }} className="text-[#011023] font-semibold uppercase">{selectedTask?.assignedEmployees?.technician?.name || 'Not Assigned'}</Text>
                     </View>
                     <View className="flex-row items-center justify-between mt-1">
-                      <Text style={{fontSize:13.5}} className="text-slate-700 uppercase font-semibold">Phone</Text>
-                      <Text style={{fontSize:13.5}} className="text-[#011023] font-semibold uppercase">{selectedTask?.assignedEmployees?.technician?.phone || 'N/A'}</Text>
+                      <Text style={{ fontSize: 13.5 }} className="text-slate-700 uppercase font-semibold">Phone</Text>
+                      <Text style={{ fontSize: 13.5 }} className="text-[#011023] font-semibold uppercase">{selectedTask?.assignedEmployees?.technician?.phone || 'N/A'}</Text>
                     </View>
                   </View>
                 </View>
@@ -609,25 +607,25 @@ export default function TaskScreen() {
             <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
             <TouchableOpacity activeOpacity={1} className="absolute inset-0" />
           <TouchableWithoutFeedback onPress={() => { if (isStatusDropdownOpen) setIsStatusDropdownOpen(false); }}>
-            <View className="bg-white rounded-[24px] shadow-2xl w-[340px]" style={{ backgroundColor: 'white', padding: 24, borderRadius: 24, width: 340, height: 220, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <View className="items-center relative justify-center flex-row">
-              <Text className="text-[18px] font-bold text-[#011023] uppercase tracking-wide">Filter</Text>
+            <View className="bg-white rounded-[24px] shadow-2xl" style={{ backgroundColor: 'white', padding: 22, borderRadius: 24, width: '88%', maxWidth: 360, minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <View className="items-center relative justify-center flex-row mb-4">
+              <Text className="text-[17px] font-bold text-[#011023] uppercase tracking-wide">Filter</Text>
             </View>
 
-            <View className="flex-row items-center justify-center z-10 w-full">
-              <View>
-                <Text className="text-[14px] font-semibold text-slate-500 uppercase tracking-widest">Status in</Text>
+            <View className="flex-row items-center justify-between z-10 w-full mb-4">
+              <View className="flex-1 mr-2">
+                <Text className="text-[13.5px] font-semibold text-slate-500 uppercase tracking-wider">Status in</Text>
               </View>
-              <View className="relative" style={{ width: 130, marginLeft: 20 }}>
+              <View className="relative" style={{ width: 140 }}>
                 <TouchableOpacity 
                   onPress={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                  style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', paddingHorizontal: 16, height: 30, borderRadius: 24, borderWidth: 1, borderColor: '#e2e8f0', width: 130 }}
+                  style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', paddingHorizontal: 12, height: 32, borderRadius: 20, borderWidth: 1, borderColor: '#e2e8f0', width: '100%' }}
                 >
                   <Text style={{ fontWeight: '500', textTransform: 'uppercase', fontSize: 13, color: '#011023', letterSpacing: 0.5 }}>{tempFilterStatus}</Text>
                 </TouchableOpacity>
 
                 {isStatusDropdownOpen && (
-                  <View className="bg-white border border-slate-200 rounded-xl mt-1 shadow-sm overflow-hidden absolute top-full left-0 z-50" style={{ width: 130, maxHeight: 180 }}>
+                  <View className="bg-white border border-slate-200 rounded-xl mt-1 shadow-sm overflow-hidden absolute top-full left-0 right-0 z-50" style={{ width: '100%', maxHeight: 180 }}>
                     <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
                       {['All', 'Pending', 'In Progress', 'In Service', 'Completed', 'Delivered'].map((statusOption) => (
                         <TouchableOpacity
@@ -637,15 +635,11 @@ export default function TaskScreen() {
                             setIsStatusDropdownOpen(false);
                           }}
                           className={`flex-row items-center justify-center relative ${tempFilterStatus === statusOption ? 'bg-slate-50' : 'bg-white'}`}
-                          style={{ paddingVertical: 5 }}
+                          style={{ paddingVertical: 6 }}
                         >
-                          <Text className={`font-semibold uppercase text-[14px] tracking-wide text-center ${tempFilterStatus === statusOption ? 'text-[#011023]' : 'text-slate-500'}`}>
+                          <Text className={`font-semibold uppercase text-[13px] tracking-wide text-center ${tempFilterStatus === statusOption ? 'text-[#011023]' : 'text-slate-500'}`}>
                             {statusOption}
                           </Text>
-                          {tempFilterStatus === statusOption && (
-                            <View className="absolute right-4">
-                            </View>
-                          )}
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
@@ -655,12 +649,12 @@ export default function TaskScreen() {
             </View>
             
             {/* Action Buttons */}
-            <View className="flex-row border-t border-slate-100 justify-between items-center" style={{ paddingTop: 16, marginTop: 8, gap: 15 }}>
+            <View className="flex-row border-t border-slate-100 justify-between items-center" style={{ paddingTop: 16, marginTop: 8, gap: 12 }}>
               <TouchableOpacity 
                 onPress={() => {
                   setIsFilterModalOpen(false);
                 }} 
-                style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', borderColor: '#e2e8f0', borderWidth: 1.5, borderRadius: 12, paddingVertical: 9 }}
+                style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', borderColor: '#e2e8f0', borderWidth: 1.5, borderRadius: 12, paddingVertical: 10 }}
               >
                 <Text style={{ fontWeight: 'bold', color: '#3c4655ff', textTransform: 'uppercase', fontSize: 12, letterSpacing: 1 }}>Cancel</Text>
               </TouchableOpacity>
@@ -670,7 +664,7 @@ export default function TaskScreen() {
                   setFilterStatus(tempFilterStatus);
                   setIsFilterModalOpen(false);
                 }} 
-                style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#151a20ff', borderRadius: 12, paddingVertical: 9 }}
+                style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#151a20ff', borderRadius: 12, paddingVertical: 10 }}
               >
                 <Text style={{ fontWeight: 'bold', color: '#ffffff', textTransform: 'uppercase', fontSize: 12, letterSpacing: 1 }}>Apply</Text>
               </TouchableOpacity>
