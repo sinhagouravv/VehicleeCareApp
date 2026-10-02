@@ -756,7 +756,7 @@ export default function IdCardScreen() {
                   {/* Bottom Section: Signature & Security Protocol */}
                   <View style={{ marginTop: 'auto', alignItems: 'center', width: '100%', marginBottom: 5 }}>
                     {/* Manager Signature Section */}
-                    <View style={{ alignItems: 'center', width: 140, marginBottom: 1 }}>
+                    <View style={{ alignItems: 'center', width: 141, marginBottom: 1 }}>
                       <Text 
                         style={{ 
                           fontFamily: Platform.OS === 'ios' ? 'Snell Roundhand' : 'cursive', 
