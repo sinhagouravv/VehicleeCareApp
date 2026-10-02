@@ -2,11 +2,13 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Tabs, router } from 'expo-router';
 import { LayoutDashboard, CalendarClock, FileText, Settings, CheckSquare, User, Bell } from 'lucide-react-native';
 import { Platform, TouchableOpacity, View, PanResponder, DeviceEventEmitter } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 
 export default function Dock() {
   const [isSidebarVisible, setSidebarVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const subscription = DeviceEventEmitter.addListener('openSidebar', () => {
@@ -40,25 +42,24 @@ export default function Dock() {
           tabBarInactiveTintColor: '#94a3b8',
           tabBarStyle: {
             backgroundColor: '#ffffff',
-            marginTop: 15, // Creates a global gap above the dock for all screens
             borderTopWidth: 1,
             borderTopColor: '#f1f5f9',
-            height: Platform.OS === 'ios' ? 90 : 65,
-          paddingBottom: Platform.OS === 'ios' ? 35 : 10,
-          paddingTop: 14,
-          paddingHorizontal: 12,
-          elevation: 10,
-          shadowColor: '#000000ff',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.05,
-          shadowRadius: 5,
-        },
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '500',
-          marginTop: 4,
-        },
-      }}>
+            height: Platform.OS === 'ios' ? 52 + insets.bottom : 62,
+            paddingBottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 6) : 8,
+            paddingTop: 6,
+            paddingHorizontal: 12,
+            elevation: 10,
+            shadowColor: '#000000ff',
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.05,
+            shadowRadius: 5,
+          },
+          tabBarLabelStyle: {
+            fontSize: 10,
+            fontWeight: '600',
+            marginTop: 3,
+          },
+        }}>
       <Tabs.Screen
         name="index"
         options={{
