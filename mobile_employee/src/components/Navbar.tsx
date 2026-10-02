@@ -32,13 +32,14 @@ export default function Navbar() {
 
   return (
     <>
-      <SafeAreaView edges={['top']} style={{ backgroundColor: '#ffffff', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, zIndex: 50 }}>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#ffffff', zIndex: 50 }}>
         <View style={{
           backgroundColor: '#ffffff',
           borderBottomWidth: 1,
           borderBottomColor: '#f1f5f9',
-          height: Platform.OS === 'ios' ? 50 : 35,
-          paddingBottom: Platform.OS === 'ios' ? 10 : 5,
+          minHeight: 40,
+          paddingTop: 0,
+          paddingBottom: 6,
           paddingHorizontal: 19,
           flexDirection: 'row',
           alignItems: 'center',
